@@ -23,7 +23,7 @@ gh issue list --search 'is:open assignee:@me -label:in-progress sort:updated-asc
 
 ## 1. Check each
 
-Read it with its comments (`gh issue view <n> --comments`), and what it points at: the blocker, linked PRs (`gh pr list --search "<n>" --state all`), and main (`git log origin/main --oneline -E --grep '#<n>([^0-9]|$)'`).
+Read it with its comments (`gh issue view <n> --comments`), and what it points at: the blocker, linked PRs (`gh pr list --search "<n>" --state all`), and main (`git log origin/<base> --oneline -E --grep '#<n>([^0-9]|$)'`, `<base>` being `gate.base` in `.factory/resolved.json`).
 
 - **`blocked`:** is what it waits on still open? A blocker that resolved means re-route.
 - **`ready-for-human`:** was it done by hand, or did it go stale? Has the code since made it moot (`Explore` agents, in parallel, for the ones in question)?

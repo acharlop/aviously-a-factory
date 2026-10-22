@@ -25,14 +25,15 @@ export function ticketState(
     worktrees,
     prs,
     runDir,
-  }: { worktrees: readonly Worktree[]; prs: readonly OpenPr[]; runDir: string },
+    base,
+  }: { worktrees: readonly Worktree[]; prs: readonly OpenPr[]; runDir: string; base: string },
   sh: Exec,
 ): TicketState {
   const { number, branch, comments } = claim;
   const git = (args: string[], cwd?: string) =>
     sh("git", args, cwd === undefined ? {} : { cwd }).stdout.trim();
   const head = git(["rev-parse", "--verify", "--quiet", branch]);
-  const ahead = Number(git(["rev-list", "--count", `origin/main..${branch}`])) || 0;
+  const ahead = Number(git(["rev-list", "--count", `${base}..${branch}`])) || 0;
   const worktree = worktrees.find((each) => each.branch === branch)?.path;
   const body =
     worktree && git(["rev-parse", "--path-format=absolute", "--git-path", PR_BODY], worktree);

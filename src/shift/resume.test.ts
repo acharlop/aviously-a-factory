@@ -54,12 +54,14 @@ test("the state comes from git, the PR body in the worktree's git dir, the run f
       return out(join(gitDir, "factory-pr-body.md"));
     }
     if (args[0] === "rev-parse") return out(`${HEAD}\n`);
+    assert.deepEqual(args, ["rev-list", "--count", "origin/trunk..web/7-a"]);
     return out("4\n");
   };
   const found = ticketState(
     { number: 7, branch: "web/7-a", comments: [] },
     {
       worktrees: [{ path: "/wt/7-a", head: HEAD, branch: "web/7-a" }],
+      base: "origin/trunk",
       prs: [
         { url: "https://github.com/o/app/pull/9", headRefName: "web/7-a", autoMergeRequest: {} },
       ],

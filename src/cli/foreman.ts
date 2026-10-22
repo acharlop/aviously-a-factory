@@ -87,9 +87,10 @@ export async function free(args: string[], sh: Exec = exec): Promise<number> {
     ["pr", "list", "--state", "open", "--limit", "200", "--json", "number,title,body,headRefName"],
     sh,
   );
-  if (sh("git", ["fetch", "--quiet", "origin", "main"]).status !== 0)
-    throw new Error("git fetch origin main failed");
-  const log = sh("git", ["log", "origin/main", "--format=%B"]).stdout;
+  const { base } = resolved.gate;
+  if (sh("git", ["fetch", "--quiet", "origin", base]).status !== 0)
+    throw new Error(`git fetch origin ${base} failed`);
+  const log = sh("git", ["log", `origin/${base}`, "--format=%B"]).stdout;
   const shift = shiftCount(repo.split("/")[1]!);
   console.log(orderLine(picked, shift));
   const filter = { departments: wanted, kinds: kinds!.values };
@@ -166,11 +167,12 @@ export async function inFlight(args: string[], sh: Exec = exec): Promise<number>
   const here = (branch: string) => sh("git", ["branch", "--list", branch]).stdout.trim() !== "";
   const split = splitClaims(claimed, open, prs<MergedPr>("merged", ",url,mergedAt"), here);
   const worktrees = parseWorktrees(sh("git", ["worktree", "list", "--porcelain"]).stdout);
+  const base = `origin/${(await loadProject()).gate.base}`;
   for (const { number, title, branch } of split.here) {
     const { comments } = claimed.find((each) => each.number === number)!;
     const state = ticketState(
       { number, branch, comments },
-      { worktrees, prs: open, runDir: run.dir },
+      { worktrees, prs: open, runDir: run.dir, base },
       sh,
     );
     console.log(`${number}\t${title}\t${branch}\t${nextStep(state)}`);
@@ -239,6 +241,7 @@ export async function push(args: string[], sh: Exec = exec): Promise<number> {
   try {
     const ok = pushBranch(pushing, {
       sh,
+      base: `origin/${resolved.gate.base}`,
       migrations: resolved.foreman.migrations,
       method: resolved.merge.method,
       bodyFile,
@@ -259,7 +262,8 @@ export async function inspectors(args: string[], sh: Exec = exec): Promise<numbe
     console.log("usage: factory inspectors [<base>]");
     return 2;
   }
-  const base = args[0] ?? "origin/main";
+  const resolved = await loadProject();
+  const base = args[0] ?? `origin/${resolved.gate.base}`;
   const fork = sh("git", ["merge-base", base, "HEAD"]);
   const diff = fork.status === 0 && sh("git", ["diff", "--name-only", fork.stdout.trim(), "HEAD"]);
   if (!diff || diff.status !== 0) {
@@ -267,7 +271,7 @@ export async function inspectors(args: string[], sh: Exec = exec): Promise<numbe
     return 1;
   }
   const files = diff.stdout.split("\n").filter(Boolean);
-  for (const { axis, why } of axesFor(files, await loadProject()))
+  for (const { axis, why } of axesFor(files, resolved))
     console.log(`${axis}\t${INSPECTORS[axis]}\t${why}`);
   return 0;
 }
