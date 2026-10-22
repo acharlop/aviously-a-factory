@@ -76,12 +76,12 @@ flowchart LR
   c --> d["Lost and found"] --> e["Lunch break"] --> a
 ```
 
-| Knob | Values | Set by |
-|---|---|---|
-| Filter | `department:web`, `kind:feature`, ... | whoever starts the shift |
-| Mode | supervised, unsupervised, lights-out | whoever starts the shift |
-| Order | priority (default), fifo, lifo, alternate | whoever starts the shift |
-| Ends when | N tickets merged, queue empty, or time cap | machine config |
+| Knob      | Values                                     | Set by                   |
+| --------- | ------------------------------------------ | ------------------------ |
+| Filter    | `department:web`, `kind:feature`, ...      | whoever starts the shift |
+| Mode      | supervised, unsupervised, lights-out       | whoever starts the shift |
+| Order     | priority (default), fifo, lifo, alternate  | whoever starts the shift |
+| Ends when | N tickets merged, queue empty, or time cap | machine config           |
 
 With no rota, a machine runs one unfiltered shift in priority order, plus a lunch break whenever the usage limit is hit.
 

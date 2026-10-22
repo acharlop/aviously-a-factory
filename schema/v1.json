@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "configVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "steps": {
+      "default": {},
+      "description": "The version each step runs at. A step left out runs at its oldest live version",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "The step version to run, e.g. 2 for review@2"
+          },
+          {
+            "type": "string",
+            "const": "none",
+            "description": "This project skips the step"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "local": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Path to the project's own step, from the project root"
+              }
+            },
+            "required": [
+              "local"
+            ],
+            "additionalProperties": false,
+            "description": "A local step: the project supplies this step itself"
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "configVersion"
+  ],
+  "additionalProperties": false
+}

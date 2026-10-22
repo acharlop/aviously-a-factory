@@ -1,0 +1,49 @@
+{
+  "name": "aviously-a-factory",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agents take a project's tickets to merged PRs. A Claude Code plugin plus the factory CLI.",
+  "repository": "github:acharlop/aviously-a-factory",
+  "bin": {
+    "factory": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "schema",
+    ".claude-plugin",
+    "agents",
+    "skills",
+    "hooks"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "prepare": "pnpm build",
+    "factory": "node src/cli/main.ts",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "test": "node --test 'src/**/*.test.ts'",
+    "verify": "pnpm format:check && pnpm lint && pnpm check-types && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1.89.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=24.15"
+  },
+  "packageManager": "pnpm@12.9.1"
+}
