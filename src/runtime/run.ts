@@ -1,8 +1,17 @@
 import { type ChildProcess, spawn } from "node:child_process";
-import { closeSync, openSync } from "node:fs";
-import { constants } from "node:os";
+import { closeSync, mkdirSync, mkdtempSync, openSync } from "node:fs";
+import { constants, tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { signalGroup } from "./lock.ts";
+
+/** A run's own folder under `steps/` in the shift's run folder, so a second run keeps the first's logs; else a fresh temp one named from `prefix`. */
+export function stepLogs(runDir: string | undefined, prefix: string) {
+  if (!runDir) return mkdtempSync(join(tmpdir(), prefix));
+  mkdirSync(join(runDir, "steps"), { recursive: true });
+  const stamp = new Date().toISOString().replaceAll(":", "-");
+  return mkdtempSync(join(runDir, "steps", `${stamp}-`));
+}
 
 /** Runs a command with its output in logFile; passed when it exits 0 before any timeout. */
 export function runLogged(

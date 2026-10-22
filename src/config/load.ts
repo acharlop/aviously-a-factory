@@ -12,6 +12,7 @@ import {
   type FactoryConfig,
   type Foreman,
   type Gate,
+  type Merge,
   type PaperTrail,
 } from "./schema.ts";
 
@@ -60,6 +61,7 @@ export type Resolved = {
   modules: Modules;
   foreman: Foreman;
   gate: Gate;
+  merge: Merge;
 };
 
 /** The version an unpinned step runs: its oldest live one, so a factory upgrade never changes it unasked. */
@@ -99,6 +101,7 @@ export function resolveConfig(
     modules: config.modules,
     foreman: config.foreman,
     gate: config.gate,
+    merge: config.merge,
   };
 }
 

@@ -6,6 +6,7 @@ import { doctor } from "./doctor.ts";
 import { memo, timesheet } from "./file.ts";
 import { labels } from "./labels.ts";
 import { gate, lock, signoff } from "./gate.ts";
+import { queue } from "./queue.ts";
 import { migrate } from "./migrate.ts";
 import { mobile } from "./mobile.ts";
 import { untriaged } from "./untriaged.ts";
@@ -132,6 +133,11 @@ const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promi
   lock: {
     summary: "Run a command under this machine's heavy lock, or a check slot ([--checks] -- <cmd>)",
     run: lock,
+  },
+  queue: {
+    summary:
+      "Land the pull requests with auto-merge on, gated here ([--all] [--dry-run] [--checkout <path>] [--run-dir <path>])",
+    run: queue,
   },
 };
 

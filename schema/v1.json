@@ -464,6 +464,103 @@
         }
       },
       "additionalProperties": false
+    },
+    "merge": {
+      "description": "The merge step: how the queue lands what passed the gate",
+      "default": {},
+      "type": "object",
+      "properties": {
+        "method": {
+          "default": "squash",
+          "description": "How a pull request merges",
+          "type": "string",
+          "enum": [
+            "squash",
+            "merge",
+            "rebase"
+          ]
+        },
+        "install": {
+          "default": "pnpm install --frozen-lockfile --config.confirm-modules-purge=false",
+          "description": "Installs dependencies in the merge queue's clone whenever pnpm-lock.yaml changes",
+          "type": "string",
+          "minLength": 1
+        },
+        "links": {
+          "default": [],
+          "description": "Files the queue's clone links from the main checkout, such as .env",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "needs": {
+          "default": [],
+          "description": "Commands that must succeed before the queue starts, such as docker info",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "fixups": {
+          "default": [],
+          "description": "What runs on each merge of main into a head before it is committed, in order",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Shell command run in the queue's clone while main merges into a head, the merge uncommitted and its conflicts in place, with FACTORY_MAIN and FACTORY_HEAD set; it mends what it can, and exits non-zero with why the head can't land"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "module": {
+                    "type": "string",
+                    "description": "The module that supplies this fixup"
+                  }
+                },
+                "required": [
+                  "module"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "removals": {
+          "description": "What the queue won't let a pull request remove without a label",
+          "default": {},
+          "type": "object",
+          "properties": {
+            "files": {
+              "default": [],
+              "description": "Globs of files a pull request may delete or rename away only with the label",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "scripts": {
+              "default": false,
+              "description": "Whether removing a root package.json script needs the label too",
+              "type": "boolean"
+            },
+            "label": {
+              "default": "removal-ok",
+              "description": "The label that allows it",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [

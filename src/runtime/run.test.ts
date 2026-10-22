@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { test } from "node:test";
 
-import { runLogged, stopOnSignal } from "./run.ts";
+import { runLogged, stepLogs, stopOnSignal } from "./run.ts";
 
 const logIn = (prefix: string) => join(mkdtempSync(join(tmpdir(), prefix)), "run.log");
 
@@ -90,6 +90,16 @@ test("a signal while no command runs releases the lock and exits at once", () =>
   guard.dispose();
   assert.equal(released, 1);
   assert.deepEqual(exits, [130]);
+});
+
+test("each run in a shift's run folder gets its own step logs folder there, and one outside a shift a temp folder named for whoever asked", () => {
+  const runDir = mkdtempSync(join(tmpdir(), "factory-run-dir-"));
+  const first = stepLogs(runDir, "unused-");
+  const second = stepLogs(runDir, "unused-");
+  assert.notEqual(first, second);
+  assert.equal(dirname(first), join(runDir, "steps"));
+  assert.equal(dirname(second), join(runDir, "steps"));
+  assert.match(basename(stepLogs(undefined, "factory-merge-queue-")), /^factory-merge-queue-/);
 });
 
 /** Resolves once fn holds, polling for up to five seconds. */

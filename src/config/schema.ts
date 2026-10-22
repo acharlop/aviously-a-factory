@@ -151,6 +151,62 @@ const gate = z
   .prefault({})
   .describe("The gate: the checks a change passes before it merges");
 
+const merge = z
+  .strictObject({
+    method: z
+      .enum(["squash", "merge", "rebase"])
+      .default("squash")
+      .describe("How a pull request merges"),
+    install: z
+      .string()
+      .min(1)
+      .default("pnpm install --frozen-lockfile --config.confirm-modules-purge=false")
+      .describe("Installs dependencies in the merge queue's clone whenever pnpm-lock.yaml changes"),
+    links: z
+      .array(z.string().min(1))
+      .default([])
+      .describe("Files the queue's clone links from the main checkout, such as .env"),
+    needs: z
+      .array(z.string().min(1))
+      .default([])
+      .describe("Commands that must succeed before the queue starts, such as docker info"),
+    fixups: z
+      .array(
+        z.union([
+          z
+            .string()
+            .min(1)
+            .describe(
+              "Shell command run in the queue's clone while main merges into a head, the merge uncommitted and its conflicts in place, with FACTORY_MAIN and FACTORY_HEAD set; it mends what it can, and exits non-zero with why the head can't land",
+            ),
+          z.strictObject({
+            module: z
+              .string()
+              .refine((name) => findModule(name)?.fixup, "no module by that name supplies a fixup")
+              .describe("The module that supplies this fixup"),
+          }),
+        ]),
+      )
+      .default([])
+      .describe("What runs on each merge of main into a head before it is committed, in order"),
+    removals: z
+      .strictObject({
+        files: z
+          .array(z.string().min(1))
+          .default([])
+          .describe("Globs of files a pull request may delete or rename away only with the label"),
+        scripts: z
+          .boolean()
+          .default(false)
+          .describe("Whether removing a root package.json script needs the label too"),
+        label: z.string().min(1).default("removal-ok").describe("The label that allows it"),
+      })
+      .prefault({})
+      .describe("What the queue won't let a pull request remove without a label"),
+  })
+  .prefault({})
+  .describe("The merge step: how the queue lands what passed the gate");
+
 const fields = {
   configVersion: z.literal(CONFIG_VERSION),
   departments: z
@@ -171,6 +227,7 @@ const fields = {
   modules,
   foreman,
   gate,
+  merge,
 };
 
 /** The config schema, checking step pins against `registry`. */
@@ -209,6 +266,7 @@ export type FactoryConfig = z.output<typeof configSchema>;
 export type PaperTrail = Exclude<FactoryConfig["paperTrail"], "none">;
 export type Foreman = FactoryConfig["foreman"];
 export type Gate = FactoryConfig["gate"];
+export type Merge = FactoryConfig["merge"];
 
 export const jsonSchema = () =>
   z.toJSONSchema(configSchema, { io: "input", unrepresentable: "any" });
