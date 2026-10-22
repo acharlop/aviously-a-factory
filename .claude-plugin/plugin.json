@@ -1,6 +1,6 @@
 {
   "name": "aviously-a-factory",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Agents take a project's tickets to merged PRs; a person shows up only for decisions.",
   "author": { "name": "Avi Charlop" },
   "repository": "https://github.com/acharlop/aviously-a-factory"
