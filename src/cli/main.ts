@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { ConfigError, loadProject } from "../config/load.ts";
+import { loadProject } from "../config/load.ts";
 import { jsonSchema } from "../config/schema.ts";
 import { FACTORY_VERSION } from "../version.ts";
 import { doctor } from "./doctor.ts";
@@ -172,7 +172,8 @@ try {
   else
     process.exitCode = help() || Number(Boolean(name) && !["help", "--help", "-h"].includes(name!));
 } catch (error) {
-  if (!(error instanceof ConfigError)) throw error;
-  console.error(error.message);
+  // A failed gh or git call is the person's to fix, so its message is enough; FACTORY_DEBUG=1 shows the stack.
+  if (process.env.FACTORY_DEBUG || !(error instanceof Error)) throw error;
+  console.error(`factory ${name}: ${error.message}`);
   process.exitCode = 1;
 }

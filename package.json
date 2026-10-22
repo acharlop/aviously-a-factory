@@ -1,6 +1,6 @@
 {
   "name": "aviously-a-factory",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Agents take a project's tickets to merged PRs. A Claude Code plugin plus the factory CLI.",
   "repository": "github:acharlop/aviously-a-factory",
