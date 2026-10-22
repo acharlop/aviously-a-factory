@@ -9,7 +9,7 @@ const USAGE = "usage: factory mobile device | native <base> [<head>]";
 export async function mobile([what, base, head = "HEAD"]: string[]): Promise<number> {
   const resolved = await loadProject();
   if (what === "device") {
-    const why = notDeviceMachine(resolved, machineConfig(repoName().split("/")[1]!));
+    const why = notDeviceMachine(resolved.modules.mobile, machineConfig(repoName().split("/")[1]!));
     console.log(why ?? "this machine runs the project's device checks");
     return why ? 1 : 0;
   }

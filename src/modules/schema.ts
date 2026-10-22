@@ -47,11 +47,18 @@ const mobile = z.strictObject({
     .describe(
       "Globs, from the project root, of files whose change needs a new dev build, e.g. apps/mobile/ios/**",
     ),
-  startDevice: command("Starts a device check on this machine's simulator"),
+  startDevice: command(
+    "Starts a device check on this machine's simulator, on the dev build installed there",
+  ),
+  buildDevice: command(
+    "Builds and installs this checkout's dev build on the simulator, then starts a device check on it",
+  ),
   stopDevice: command("Stops the device check, whatever happened"),
-  listFlows: command("Lists the end-to-end flows a branch reaches, without running them"),
+  listFlows: command(
+    "Prints the end-to-end flows the changes since the base appended reach, one per line, without running them",
+  ),
   runFlows: command(
-    "Runs the flows a branch reaches, with a folder appended for each flow's last screen",
+    "Runs the flows named after it on the started device check, printing `passed <flow>` or `failed <flow>: <where>` for each; with SHOTS_DIR set, saves each flow's last screen there",
   ),
 });
 

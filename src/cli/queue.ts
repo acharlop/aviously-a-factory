@@ -99,7 +99,7 @@ export async function queue(args: string[]): Promise<number> {
     log(`merge-queue: ${skip}`);
     return 0;
   }
-  const { root, gate, merge } = resolved;
+  const { root, gate, merge, modules } = resolved;
   const project = repoName(exec).split("/")[1]!;
   const home = projectHome(project);
   const machine = machineConfig(project);
@@ -155,7 +155,7 @@ export async function queue(args: string[]): Promise<number> {
       stopper.stop("SIGTERM");
     }, minutes * 60_000);
     ensureClone(dir, main, merge.links, exec, log);
-    const context = { root: dir, machine, sh: exec };
+    const context = { root: dir, modules, machine, home, sh: exec };
     const deps = queueCheckout({
       dir,
       runDir: stepLogs(options.runDir, "factory-merge-queue-"),

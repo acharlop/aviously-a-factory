@@ -267,7 +267,12 @@
                 "startDevice": {
                   "type": "string",
                   "minLength": 1,
-                  "description": "Starts a device check on this machine's simulator"
+                  "description": "Starts a device check on this machine's simulator, on the dev build installed there"
+                },
+                "buildDevice": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Builds and installs this checkout's dev build on the simulator, then starts a device check on it"
                 },
                 "stopDevice": {
                   "type": "string",
@@ -277,17 +282,18 @@
                 "listFlows": {
                   "type": "string",
                   "minLength": 1,
-                  "description": "Lists the end-to-end flows a branch reaches, without running them"
+                  "description": "Prints the end-to-end flows the changes since the base appended reach, one per line, without running them"
                 },
                 "runFlows": {
                   "type": "string",
                   "minLength": 1,
-                  "description": "Runs the flows a branch reaches, with a folder appended for each flow's last screen"
+                  "description": "Runs the flows named after it on the started device check, printing `passed <flow>` or `failed <flow>: <where>` for each; with SHOTS_DIR set, saves each flow's last screen there"
                 }
               },
               "required": [
                 "app",
                 "startDevice",
+                "buildDevice",
                 "stopDevice",
                 "listFlows",
                 "runFlows"
