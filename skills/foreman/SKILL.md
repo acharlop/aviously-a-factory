@@ -31,7 +31,7 @@ Tickets or an epic named in the invocation replace the filter and the order: tak
 
 Then `pnpm factory timings start run`.
 
-**Which version runs.** For each step, `steps.<name>` says: an `agent` to spawn as `aviously-a-factory:<agent>`; a `local` step to follow instead (read its file and do what it says); or `none` to skip the step. The gate and the merge queue are the `gate` and `merge` steps, run by `pnpm factory queue`; you never run the gate yourself.
+**Which version runs.** For each step, `steps.<name>` says: an `agent` to spawn as `aviously-a-factory:<agent>`; a `local` step to follow instead (read its file and do what it says); or `none` to skip the step. The gate and the merge are the `gate` and `merge` steps, run by `pnpm factory queue` whatever their version (step 2); you never run the gate yourself.
 
 ## Timeouts
 
@@ -73,7 +73,9 @@ Carry each ticket `in-flight` lists to its next step before taking anything new.
 
 ### 2. Queue
 
-Only on a machine with `QUEUE=on` and a `merge` step that isn't `none`; elsewhere the memo says "queued for <`QUEUE_PEER`>" for each PR with auto-merge on. The queue is `FACTORY_RUN_DIR=<run folder> pnpm factory queue`, in the background. It holds the machine's lock, so a second one waits, and waits out `QUEUE_PEER`'s. It never runs beside an agent's end-to-end tests: once 3 to 6 PRs have auto-merge on, or nothing else is left to build, dispatch nothing new, give the running agents up to 10 minutes to hand back, then run it. An agent still running tests at 10 minutes is stopped, `pnpm factory stop-e2e <its worktree>`, and its ticket resumes at its step next round. Start the next round when the queue ends. Each PR it dropped gets its cause fixed and auto-merge back on in that round, or a line under waits.
+`steps.merge` says which merge runs. **merge@2** (GitHub native): GitHub merges each PR with auto-merge on once the base's required checks pass; `FACTORY_RUN_DIR=<run folder> pnpm factory queue` is a short pass, on any machine, beside anything, that brings PRs behind the base up to date, drops the ones whose required check failed or that conflict, and says what merged. Run it at each hand-back while PRs have auto-merge on, and before step 10. Each PR it dropped gets its cause fixed and auto-merge back on, or a line under waits. The rest of this step is merge@1.
+
+**merge@1** (the Mac queue): only on a machine with `QUEUE=on` and a `merge` step that isn't `none`; elsewhere the memo says "queued for <`QUEUE_PEER`>" for each PR with auto-merge on. The queue is `FACTORY_RUN_DIR=<run folder> pnpm factory queue`, in the background. It holds the machine's lock, so a second one waits, and waits out `QUEUE_PEER`'s. It never runs beside an agent's end-to-end tests: once 3 to 6 PRs have auto-merge on, or nothing else is left to build, dispatch nothing new, give the running agents up to 10 minutes to hand back, then run it. An agent still running tests at 10 minutes is stopped, `pnpm factory stop-e2e <its worktree>`, and its ticket resumes at its step next round. Start the next round when the queue ends. Each PR it dropped gets its cause fixed and auto-merge back on in that round, or a line under waits.
 
 ### 3. Claim (claim@1)
 
@@ -111,7 +113,7 @@ With findings, one fresh temp (`steps.rework`), described `<n> rework`, once per
 
 ### 9. Threads and merges
 
-Answer every review thread on your open PRs: fix it and resolve the thread, or reply with why you disagree. A thread that changes the direction of the work is an open question. Once a PR merges, check its ticket closed, then `pnpm factory epic-close <n>` (it also takes `in-progress`, `ready-for-agent` and the assignee off) and `pnpm factory clean`, which removes merged worktrees and their branches, running `foreman.teardown` first.
+Answer every review thread on your open PRs: fix it and resolve the thread, or reply with why you disagree. A thread that changes the direction of the work is an open question. With the `reviewBots` module on, review bots' threads are among them and their verdict holds auto-merge (the `modules` skill). Once a PR merges, check its ticket closed, then `pnpm factory epic-close <n>` (it also takes `in-progress`, `ready-for-agent` and the assignee off) and `pnpm factory clean`, which removes merged worktrees and their branches, running `foreman.teardown` first.
 
 ### 10. File (file@1)
 
@@ -154,5 +156,5 @@ When the factory itself costs time or tokens (an overrun, a refusal, a queue dro
 - **Background:** every agent runs with `run_in_background: true`; its hand-back arrives as a task notification, once, at the end. Keep `in-flight:<n>` tickets moving: when one reaches the queue, parks or blocks, claim the next.
 - **A fresh agent per job:** a build, a rework, a copy desk pass. Resume an agent only for a direct follow-up on its own job. Consultants plan and interns find facts when a ticket needs either, before its temp starts.
 - **Models:** `opus` for temps and inspectors, `sonnet` for the copy desk, as their definitions say.
-- **Only the foreman** files tickets and decides when a branch is pushed and whether auto-merge goes on. A temp briefed to push pushes as told; every other agent commits locally. No agent merges, and neither do you: the queue does.
+- **Only the foreman** files tickets and decides when a branch is pushed and whether auto-merge goes on. A temp briefed to push pushes as told; every other agent commits locally. No agent merges, and neither do you: the merge step does.
 - Stop processes you started, and only those.

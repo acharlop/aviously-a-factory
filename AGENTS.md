@@ -11,6 +11,7 @@ Read [GLOSSARY.md](GLOSSARY.md) first and use its words; its _Avoid_ lists are b
 - `src/shift/`: the foreman's tools that belong to no one step: timings, usage, calls, cleaning up worktrees, and resuming a ticket at its first missing step.
 - `src/runner/`: the machine runner (`factory runner`): the rota, one wake-up's choice of work, Claude sessions in their own process group, and the status screen.
 - `src/modules/`: the modules' config (`modules` in `factory.config.ts`) and their scripts. Their agents and prose are in `agents/` and `skills/modules/`.
+- `src/onboarding.ts`: what `factory onboard` reads about a project and the plan it prints; the `onboarding` skill walks a person through it.
 - `.claude-plugin/`, `skills/`, `agents/`, `hooks/`: the Claude Code plugin. Claude Code installs it as a plain checkout, so agent and skill prose runs anything scripted as `pnpm factory <cmd>`. Its version always equals `package.json`'s.
 
 ## Commands

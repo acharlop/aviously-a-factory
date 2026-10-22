@@ -117,7 +117,8 @@
       "default": {
         "translations": "none",
         "screenshots": "none",
-        "mobile": "none"
+        "mobile": "none",
+        "reviewBots": "none"
       },
       "description": "Optional capabilities the project switches on",
       "type": "object",
@@ -297,6 +298,67 @@
                 "stopDevice",
                 "listFlows",
                 "runFlows"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "reviewBots": {
+          "default": "none",
+          "description": "Review bots such as Greptile or CodeRabbit: their verdict and threads settle before auto-merge goes on",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "none",
+              "description": "This project doesn't use the module"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "bots": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                  },
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "login": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The bot's GitHub login, with or without [bot], e.g. greptile-apps or coderabbitai"
+                      },
+                      "verdict": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Regex whose first group is the bot's verdict, searched in the PR body and the bot's reviews and comments, latest first, e.g. greptile_confidence_score:(\\d)"
+                      },
+                      "pass": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Regex the verdict must match for the bot to pass, e.g. ^[45]$; without it any verdict passes"
+                      },
+                      "threads": {
+                        "default": "findings",
+                        "description": "findings: each open thread of the bot's is settled before auto-merge goes on; advisory: read, and fixed only when confirmed",
+                        "type": "string",
+                        "enum": [
+                          "findings",
+                          "advisory"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "login"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The review bots on the project's pull requests, by name"
+                }
+              },
+              "required": [
+                "bots"
               ],
               "additionalProperties": false
             }

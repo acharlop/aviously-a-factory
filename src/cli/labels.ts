@@ -21,8 +21,8 @@ export async function labels(
   });
   const root = findProjectRoot(from);
   if (!root) throw new ConfigError(`no ${CONFIG_FILE} here or above ${from}`);
-  const { labelRenames } = parseConfig(await readRawConfig(root));
-  const changes = planLabels(listLabels(sh, values.repo), labelRenames);
+  const { labelRenames, departments } = parseConfig(await readRawConfig(root));
+  const changes = planLabels(listLabels(sh, values.repo), labelRenames, departments);
   if (changes.length === 0) {
     console.log("labels match the factory set");
     return 0;

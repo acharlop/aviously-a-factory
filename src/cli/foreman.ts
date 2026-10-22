@@ -240,6 +240,7 @@ export async function push(args: string[], sh: Exec = exec): Promise<number> {
     const ok = pushBranch(pushing, {
       sh,
       migrations: resolved.foreman.migrations,
+      method: resolved.merge.method,
       bodyFile,
       read: (file) => (existsSync(file) ? readFileSync(file, "utf8") : undefined),
       shotsIn,

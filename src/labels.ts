@@ -70,14 +70,22 @@ export type LabelChange =
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
-/** What it takes to make `existing` match the factory set. GitHub label names ignore case. */
+/** The label of a department in factory.config.ts, which the receptionist files tickets under. */
+export const departmentLabel = (name: string): Label => ({
+  name: `department:${name}`,
+  color: "ededed",
+  description: `Department: ${name}`,
+});
+
+/** What it takes to make `existing` match the factory set and the project's departments. GitHub label names ignore case. */
 export function planLabels(
   existing: readonly Label[],
   renames: Readonly<Record<string, string>> = {},
+  departments: readonly string[] = [],
 ): LabelChange[] {
   const all = Object.entries({ ...LABEL_RENAMES, ...renames });
   const changes: LabelChange[] = [];
-  for (const label of FACTORY_LABELS) {
+  for (const label of [...FACTORY_LABELS, ...departments.map(departmentLabel)]) {
     const current = existing.find((each) => same(each.name, label.name));
     const old = existing.filter((each) =>
       all.some(([from, to]) => same(from, each.name) && same(to, label.name)),

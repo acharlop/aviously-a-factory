@@ -1,5 +1,6 @@
 import { basename, matchesGlob } from "node:path";
 
+import type { Merge } from "../../../config/schema.ts";
 import type { Exec } from "../../../runtime/exec.ts";
 import { gh, ghJson } from "../../../runtime/github.ts";
 import { claimedBranch, reviewedAt, reviewedComment } from "../../../runtime/ticket.ts";
@@ -11,6 +12,8 @@ export type Deps = {
   sh: Exec;
   /** Globs of schema files whose change needs its migration generated before the push. */
   migrations: readonly string[];
+  /** The project's merge method, which auto-merge uses. */
+  method: Merge["method"];
   /** The PR body file's path, from the worktree's git dir. */
   bodyFile: string;
   /** The file's text, or undefined when it doesn't exist. */
@@ -119,7 +122,7 @@ export function push({ number, autoMerge, shots, title }: Pushing, deps: Deps): 
     gh(["pr", "edit", url, ...text], sh, written.body);
     log(`updated the title and body of ${url}`);
   } else url = lastLine(gh(["pr", "create", "--head", branch, ...text], sh, written.body));
-  if (autoMerge) gh(["pr", "merge", url, "--auto", "--squash", "--delete-branch"], sh);
+  if (autoMerge) gh(["pr", "merge", url, "--auto", `--${deps.method}`, "--delete-branch"], sh);
   if (!reviewedAt(issue.comments, head))
     gh(["issue", "comment", String(number), "--body", reviewedComment(head)], sh);
   log(`PR: ${url}`);

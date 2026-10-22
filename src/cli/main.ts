@@ -14,6 +14,8 @@ import { claim, free, inFlight, inspectors, park, push } from "./foreman.ts";
 import { reviewDone, reviewDue, suggestionBox } from "./file.ts";
 import { calls, clean, commentEdit, epicClose, stopE2e, timings, usage } from "./shift.ts";
 import { runner } from "./runner.ts";
+import { bots } from "./bots.ts";
+import { onboard } from "./onboard.ts";
 
 const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promise<number> }> = {
   doctor: { summary: "Check the config, the plugin and this machine", run: doctor },
@@ -137,13 +139,22 @@ const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promi
   },
   queue: {
     summary:
-      "Land the pull requests with auto-merge on, gated here ([--all] [--dry-run] [--checkout <path>] [--run-dir <path>])",
+      "The merge step on the pull requests with auto-merge on: merge@1 gates and lands them here, merge@2 tends what GitHub lands ([--all] [--dry-run] [--checkout <path>] [--run-dir <path>])",
     run: queue,
   },
   runner: {
     summary:
       "This machine's runner, which works the rota across its projects (tick [--dry-run] | status | on | off | stop | plist | shift)",
     run: runner,
+  },
+  bots: {
+    summary: "Each review bot's standing on a pull request; exits 0 once all are settled (<pr>)",
+    run: bots,
+  },
+  onboard: {
+    summary:
+      "Plan this project's onboarding: a starter factory.config.ts, its labels, its handbook files ([--write])",
+    run: onboard,
   },
 };
 

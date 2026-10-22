@@ -1,13 +1,13 @@
-import { appendFileSync, existsSync, mkdirSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { constants } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
-import { loadProject } from "../config/load.ts";
+import { loadProject, type Resolved } from "../config/load.ts";
 import type { Merge } from "../config/schema.ts";
 import { findModule } from "../modules/registry.ts";
 import { projectChecks } from "../runtime/checks.ts";
 import { exec } from "../runtime/exec.ts";
-import { repoName } from "../runtime/github.ts";
+import { ghJson, repoName } from "../runtime/github.ts";
 import { describeOwner, HEAVY_LOCK, holdLock, lockOwner } from "../runtime/lock.ts";
 import {
   FACTORY_HOME,
@@ -18,6 +18,7 @@ import {
   queuePeer,
   timeoutMinutes,
 } from "../runtime/machine.ts";
+import { reviewBlockers } from "../runtime/reviews.ts";
 import { runLockOf, withRunLock } from "../runtime/run-lock.ts";
 import { stepLogs, stopOnSignal } from "../runtime/run.ts";
 import { signOffRecorder } from "../steps/file/v1/sign-off.ts";
@@ -26,6 +27,14 @@ import { blockers, stayAwake, waitForLoad } from "../steps/merge/v1/host.ts";
 import { holdQueue, peerDeps } from "../steps/merge/v1/peer.ts";
 import { preview } from "../steps/merge/v1/preview.ts";
 import { newRound, type Round, runQueue, summarize } from "../steps/merge/v1/queue.ts";
+import {
+  dropComment,
+  earlierQueued,
+  type NativePr,
+  PR_FIELDS,
+  tend,
+} from "../steps/merge/v2/native.ts";
+import { requiredChecks } from "../steps/merge/v2/required.ts";
 import { skipped } from "./gate.ts";
 
 const USAGE = "usage: factory queue [--all] [--dry-run] [--checkout <path>] [--run-dir <path>]";
@@ -85,7 +94,66 @@ function queueAll(base: string, method: Merge["method"], log: (line: string) => 
     log(`merge-queue: couldn't turn auto-merge on for ${failed.map((n) => `#${n}`).join(", ")}`);
 }
 
-/** `factory queue`: merge@1, the queue on this machine. Lands every open pull request into the base with auto-merge on, gated on this machine. */
+/** merge@2's pass: GitHub lands what has auto-merge on, so it needs no lock, no clone and no queue machine. */
+function nativePass(
+  { gate, merge }: Resolved,
+  options: NonNullable<ReturnType<typeof parseArgs>>,
+  log: (line: string) => void,
+): number {
+  if (options.all) queueAll(gate.base, merge.method, log);
+  const logFile = options.runDir && join(options.runDir, "queue.log");
+  const earlier = earlierQueued(
+    logFile && existsSync(logFile) ? readFileSync(logFile, "utf8") : "",
+  );
+  return tend({
+    base: gate.base,
+    log,
+    open: () =>
+      ghJson<NativePr[]>([
+        "pr",
+        "list",
+        "--state",
+        "open",
+        "--base",
+        gate.base,
+        "--limit",
+        "200",
+        "--json",
+        PR_FIELDS,
+      ]),
+    required: requiredChecks(gate.base),
+    reviews: (pr) => reviewBlockers(pr.number),
+    update: (pr) => {
+      const how = merge.method === "rebase" ? ["--rebase"] : [];
+      const updated = exec("gh", ["pr", "update-branch", String(pr.number), ...how]);
+      return updated.status === 0 ? undefined : updated.stderr.trim();
+    },
+    drop: (pr, reason) => {
+      for (const args of [
+        ["pr", "merge", String(pr.number), "--disable-auto"],
+        ["pr", "comment", String(pr.number), "--body-file", "-"],
+      ]) {
+        const result = exec("gh", args, { input: dropComment(reason) });
+        if (result.status !== 0)
+          log(`merge-queue: gh ${args.join(" ")} failed: ${result.stderr.trim()}`);
+      }
+    },
+    earlier,
+    merged: (number) =>
+      exec("gh", [
+        "pr",
+        "view",
+        String(number),
+        "--json",
+        "state",
+        "--jq",
+        ".state",
+      ]).stdout.trim() === "MERGED",
+    dryRun: options.dryRun,
+  });
+}
+
+/** `factory queue`: the merge step. merge@1 is the queue on this machine: it lands every open pull request into the base with auto-merge on, gated on this machine. merge@2 is a pass over what GitHub lands. */
 export async function queue(args: string[]): Promise<number> {
   const options = parseArgs(args);
   if (!options) {
@@ -99,6 +167,9 @@ export async function queue(args: string[]): Promise<number> {
     log(`merge-queue: ${skip}`);
     return 0;
   }
+  const pin = resolved.steps.merge;
+  if (typeof pin === "object" && "version" in pin && pin.version === 2)
+    return nativePass(resolved, options, log);
   const { root, gate, merge, modules } = resolved;
   const project = repoName(exec).split("/")[1]!;
   const home = projectHome(project);

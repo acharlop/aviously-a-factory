@@ -60,6 +60,7 @@ function fake(world: World = {}) {
   const deps: Deps = {
     sh,
     migrations: ["packages/db/src/schema/**"],
+    method: "squash",
     bodyFile: "/wt/.git/factory-pr-body.md",
     read: () => world.body ?? "# Tooling: the PR as it stands\n\nFixes the thing\n",
     shotsIn: (dir) => [`${dir}/566-list.png`, `${dir}/en/866-a.png`, `${dir}/he/866-a.png`],
@@ -86,6 +87,14 @@ test("a reviewed branch is pushed, gets a ready PR with its shots, auto-merge an
     `gh issue comment 866 --body Reviewed at \`${HEAD}\``,
   ]);
   assert.deepEqual(said.slice(-2), ["PR: https://github.com/o/app/pull/990", "auto-merge: on"]);
+});
+
+test("auto-merge merges by the project's method", () => {
+  const { deps, calls } = fake();
+  assert.equal(push(pushing, { ...deps, method: "rebase" }), true);
+  assert.deepEqual(did(calls, "gh pr merge"), [
+    "gh pr merge https://github.com/o/app/pull/990 --auto --rebase --delete-branch",
+  ]);
 });
 
 test("auto-merge off leaves it off, and --title names the PR", () => {

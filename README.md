@@ -36,4 +36,6 @@ Enable the plugin in `.claude/settings.json`, from this repo as a marketplace:
 }
 ```
 
-Then `pnpm factory doctor`. pnpm builds the CLI on install, so list `aviously-a-factory` under `onlyBuiltDependencies` in `pnpm-workspace.yaml`.
+Then `pnpm factory doctor`. pnpm builds the CLI on install, so allow it in `pnpm-workspace.yaml`: `aviously-a-factory: true` under `allowBuilds` from pnpm 11; before it, list it under `onlyBuiltDependencies`.
+
+To set a project up with a person present, use the `onboarding` skill; `pnpm factory onboard` prints the plan it follows.
