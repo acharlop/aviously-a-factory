@@ -8,12 +8,12 @@ Agents take a project's tickets to merged PRs. A person shows up only for decisi
 - [Design decisions](docs/design-decisions.md): what was decided while designing it, and why.
 - [docs/adr](docs/adr): the decisions that are hard to undo.
 
-Status: being built ([epic 📋](https://github.com/acharlop/aviously-a-factory/issues/10)). The working original still runs in Yarcone/yarcone and Yarcone/factory-log.
+Status: the factory side of every move is built (v0.2.0), but no project runs on it yet ([epic 📋](https://github.com/acharlop/aviously-a-factory/issues/10)). The working original still runs in Yarcone/yarcone and Yarcone/factory-log.
 
 ## Use it in a project
 
 ```sh
-pnpm add -D github:acharlop/aviously-a-factory#v0.1.0
+pnpm add -D github:acharlop/aviously-a-factory#v0.2.0
 ```
 
 ```ts
