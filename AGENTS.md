@@ -6,6 +6,7 @@ Read [GLOSSARY.md](GLOSSARY.md) first and use its words; its _Avoid_ lists are b
 
 - `src/cli/main.ts`: the `factory` CLI. One entry in `COMMANDS` per command.
 - `src/config/`: `factory.config.ts` schema (Zod, strict, `configVersion`), loading, resolving to `.factory/resolved.json`. `schema/v<N>.json` is generated: `pnpm factory schema > schema/v1.json`.
+- `src/runtime/`: what every step shares: `exec`, `github`, the machine config (`~/.factory`), marks and transcripts.
 - `src/steps/<name>/v<N>/`: one step version, registered in `src/steps/registry.ts`, with a `contract.test.ts`. Fixes edit a version in place; new behaviour is a new number.
 - `.claude-plugin/`, `skills/`, `agents/`, `hooks/`: the Claude Code plugin. Its version always equals `package.json`'s.
 

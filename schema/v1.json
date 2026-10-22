@@ -43,6 +43,49 @@
           }
         ]
       }
+    },
+    "paperTrail": {
+      "default": "none",
+      "description": "Where the File step writes timesheets, memos and sign-offs",
+      "anyOf": [
+        {
+          "type": "string",
+          "const": "none",
+          "description": "This project keeps no paper trail"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "repo": {
+              "type": "string",
+              "pattern": "^[\\w.-]+\\/[\\w.-]+$",
+              "description": "owner/name of the repository the File step writes to"
+            },
+            "timesheet": {
+              "default": "timesheets/shifts.jsonl",
+              "description": "Path of the timesheet: one JSON line per shift, its table in README.md beside it",
+              "type": "string",
+              "minLength": 1
+            },
+            "signOffs": {
+              "default": "sign-offs",
+              "description": "Folder for sign-offs: one JSON file each, in a folder per day",
+              "type": "string",
+              "minLength": 1
+            },
+            "memoLabel": {
+              "default": "memo",
+              "description": "Label on each memo, an issue in the repository per machine per day",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "repo"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   },
   "required": [

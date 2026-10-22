@@ -59,6 +59,24 @@ test("a pin must name a step and a version this release ships", () => {
   );
 });
 
+test("the paper trail is none unless the project names a repo, whose layout then takes its defaults", () => {
+  assert.equal(resolveConfig(parseConfig({ configVersion: 1 }), "/p").paperTrail, "none");
+  assert.deepEqual(
+    resolveConfig(parseConfig({ configVersion: 1, paperTrail: { repo: "o/trail" } }), "/p")
+      .paperTrail,
+    {
+      repo: "o/trail",
+      timesheet: "timesheets/shifts.jsonl",
+      signOffs: "sign-offs",
+      memoLabel: "memo",
+    },
+  );
+  assert.throws(
+    () => parseConfig({ configVersion: 1, paperTrail: { repo: "trail" } }),
+    /owner\/name/,
+  );
+});
+
 test("pins resolve to a version, none, or a local path; unpinned steps take their oldest live version", () => {
   const config = parseConfig(
     { configVersion: 1, steps: { review: 1, merge: { local: "steps/merge.ts" } } },

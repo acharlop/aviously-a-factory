@@ -6,7 +6,7 @@ import { z } from "zod";
 import { findStep, STEP_VERSIONS, stepNames } from "../steps/registry.ts";
 import type { StepVersion } from "../steps/step.ts";
 import { FACTORY_VERSION } from "../version.ts";
-import { configSchema, type FactoryConfig } from "./schema.ts";
+import { configSchema, type FactoryConfig, type PaperTrail } from "./schema.ts";
 
 export const CONFIG_FILE = "factory.config.ts";
 export const RESOLVED_FILE = join(".factory", "resolved.json");
@@ -48,6 +48,7 @@ export type Resolved = {
   configVersion: number;
   root: string;
   steps: Record<string, ResolvedStep>;
+  paperTrail: PaperTrail | "none";
 };
 
 /** The version an unpinned step runs: its oldest live one, so a factory upgrade never changes it unasked. */
@@ -72,7 +73,13 @@ export function resolveConfig(
       steps[name] = { version: pin, summary, ...(deprecated && { deprecated }) };
     }
   }
-  return { factoryVersion: FACTORY_VERSION, configVersion: config.configVersion, root, steps };
+  return {
+    factoryVersion: FACTORY_VERSION,
+    configVersion: config.configVersion,
+    root,
+    steps,
+    paperTrail: config.paperTrail,
+  };
 }
 
 /** Loads, validates and resolves the project's config, and rewrites .factory/resolved.json when it changed. */
