@@ -1,0 +1,11 @@
+{
+  "name": "aviously-a-factory",
+  "owner": { "name": "Avi Charlop" },
+  "plugins": [
+    {
+      "name": "aviously-a-factory",
+      "source": "./",
+      "description": "Agents take a project's tickets to merged PRs; a person shows up only for decisions."
+    }
+  ]
+}

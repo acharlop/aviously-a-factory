@@ -24,16 +24,16 @@ flowchart LR
 
 Each row is one factory release plus one yarcone PR, landed between shifts, never while a lights-out shift holds the lock.
 
-| # | Move | What yarcone deletes | Why here |
-|---|---|---|---|
-| 1 | Skeleton: `factory.config.ts`, `factory doctor` | nothing | Proves the pin and config work. Does nothing else |
-| 2 | Paper trail and the File step | `factory:ledger`, `factory:digest`, `signoff-record` | Only writes records; nothing reads them back mid-shift |
-| 3 | Hooks and labels | `no-hook-bypass`, `link-icons`, old label names | Leaves; label renames ship in the same PR as the skill text that names them |
-| 4 | Reality check, Receptionist, meetings | `preflight`, `triager`, the decide, discuss and sweep skills | Called by a person or the runner, never by a shift |
-| 5 | Gate and merge queue | `merge-queue.ts`, `queue-*`, `stages`, `review-gate`, `signoff` | Biggest code, but called only by name from the runner |
-| 6 | Modules: copy desk, screenshots, mobile | `strings`, `ui-reviewer`, mobile lane pieces | The foreman calls them, so they move before it |
-| 7 | Foreman: claim, build, quality control, rework | `yarcone-factory` skill, `coder`, `reviewer`, the rest of `factory:*` | Calls everything above. Whocards onboards right after |
-| 8 | Runner and rota | `factory-log/runner`, `~/.yarcone-factory` | Calls the foreman, so it goes last |
+| #   | Move                                            | What yarcone deletes                                                  | Why here                                                                    |
+| --- | ----------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| 1   | Skeleton: `factory.config.ts`, `factory doctor` | nothing                                                               | Proves the pin and config work. Does nothing else                           |
+| 2   | Paper trail and the File step                   | `factory:ledger`, `factory:digest`, `signoff-record`                  | Only writes records; nothing reads them back mid-shift                      |
+| 3   | Hooks and labels                                | `no-hook-bypass`, `link-icons`, old label names                       | Leaves; label renames ship in the same PR as the skill text that names them |
+| 4   | Reality check, Receptionist, meetings           | `preflight`, `triager`, the decide, discuss and sweep skills          | Called by a person or the runner, never by a shift                          |
+| 5   | Gate and merge queue                            | `merge-queue.ts`, `queue-*`, `stages`, `review-gate`, `signoff`       | Biggest code, but called only by name from the runner                       |
+| 6   | Modules: copy desk, screenshots, mobile         | `strings`, `ui-reviewer`, mobile lane pieces                          | The foreman calls them, so they move before it                              |
+| 7   | Foreman: claim, build, quality control, rework  | `yarcone-factory` skill, `coder`, `reviewer`, the rest of `factory:*` | Calls everything above. Whocards onboards right after                       |
+| 8   | Runner and rota                                 | `factory-log/runner`, `~/.yarcone-factory`                            | Calls the foreman, so it goes last                                          |
 
 ```mermaid
 flowchart TB

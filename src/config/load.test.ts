@@ -1,0 +1,76 @@
+import assert from "node:assert/strict";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { test } from "node:test";
+
+import type { StepVersion } from "../steps/step.ts";
+import { ConfigError, findProjectRoot, loadProject, parseConfig, resolveConfig } from "./load.ts";
+import { schemaFor } from "./schema.ts";
+
+const project = (config: string) => {
+  const root = mkdtempSync(join(tmpdir(), "factory-config-"));
+  writeFileSync(join(root, "factory.config.ts"), config);
+  return root;
+};
+
+const REGISTRY: StepVersion[] = [
+  { name: "review", version: 1, summary: "one inspector", deprecated: "use review@2" },
+  { name: "review", version: 2, summary: "several inspectors" },
+  { name: "review", version: 3, summary: "inspectors by axis" },
+  { name: "merge", version: 1, summary: "Mac queue" },
+];
+
+test("finds the config from a nested directory", () => {
+  const root = project("export default { configVersion: 1 };");
+  assert.equal(findProjectRoot(join(root, "a", "b")), root);
+});
+
+test("loading writes resolved.json with the factory version", async () => {
+  const root = project(
+    "const config: { configVersion: 1 } = { configVersion: 1 };\nexport default config;",
+  );
+  const resolved = await loadProject(root);
+  assert.deepEqual(
+    JSON.parse(readFileSync(join(root, ".factory", "resolved.json"), "utf8")),
+    resolved,
+  );
+  assert.equal(resolved.configVersion, 1);
+  assert.match(resolved.factoryVersion, /^\d+\.\d+\.\d+$/);
+});
+
+test("unknown keys are refused", () => {
+  assert.throws(() => parseConfig({ configVersion: 1, mergeMethod: "squash" }), ConfigError);
+});
+
+test("an unknown config version is refused", () => {
+  assert.throws(() => parseConfig({ configVersion: 2 }), ConfigError);
+});
+
+test("a pin must name a step and a version this release ships", () => {
+  const schema = schemaFor(REGISTRY);
+  assert.throws(
+    () => parseConfig({ configVersion: 1, steps: { reveiw: 2 } }, schema),
+    /no step called "reveiw"/,
+  );
+  assert.throws(
+    () => parseConfig({ configVersion: 1, steps: { review: 4 } }, schema),
+    /review@4 does not exist/,
+  );
+});
+
+test("pins resolve to a version, none, or a local path; unpinned steps take their oldest live version", () => {
+  const config = parseConfig(
+    { configVersion: 1, steps: { review: 1, merge: { local: "steps/merge.ts" } } },
+    schemaFor(REGISTRY),
+  );
+  assert.deepEqual(resolveConfig(config, "/p", REGISTRY).steps, {
+    merge: { local: "/p/steps/merge.ts" },
+    review: { version: 1, summary: "one inspector", deprecated: "use review@2" },
+  });
+  const unpinned = parseConfig({ configVersion: 1, steps: { merge: "none" } }, schemaFor(REGISTRY));
+  assert.deepEqual(resolveConfig(unpinned, "/p", REGISTRY).steps, {
+    merge: "none",
+    review: { version: 2, summary: "several inspectors" },
+  });
+});

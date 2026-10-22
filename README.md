@@ -8,4 +8,32 @@ Agents take a project's tickets to merged PRs. A person shows up only for decisi
 - [Design decisions](docs/design-decisions.md): what was decided while designing it, and why.
 - [docs/adr](docs/adr): the decisions that are hard to undo.
 
-Status: designed, not built. The working original still runs in Yarcone/yarcone and Yarcone/factory-log.
+Status: being built ([epic 📋](https://github.com/acharlop/aviously-a-factory/issues/10)). The working original still runs in Yarcone/yarcone and Yarcone/factory-log.
+
+## Use it in a project
+
+```sh
+pnpm add -D github:acharlop/aviously-a-factory#v0.1.0
+```
+
+```ts
+// factory.config.ts
+import { defineConfig } from "aviously-a-factory";
+
+export default defineConfig({ configVersion: 1 });
+```
+
+Enable the plugin in `.claude/settings.json`, from this repo as a marketplace:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "aviously-a-factory": {
+      "source": { "source": "github", "repo": "acharlop/aviously-a-factory" }
+    }
+  },
+  "enabledPlugins": { "aviously-a-factory@aviously-a-factory": true }
+}
+```
+
+Then `pnpm factory doctor`. pnpm builds the CLI on install, so allow it: `pnpm approve-builds` or `allowBuilds` in `pnpm-workspace.yaml`.
