@@ -65,7 +65,12 @@ function project({ machine = { MOBILE_SIGNOFF: "on" } as Record<string, string> 
     listFlows: answer("list"),
     runFlows: answer("flows"),
   };
-  const modules = { translations: "none", screenshots: "none", mobile } as const;
+  const modules = {
+    translations: "none",
+    screenshots: "none",
+    mobile,
+    reviewBots: "none",
+  } as const;
   const check = (cleanup = run) =>
     mobileCheck("mobile", { root: dir, modules, machine, home, sh }, cleanup);
   const lines: string[] = [];
