@@ -38,7 +38,36 @@ const firstLine = (body: string) => {
 
 /** What keeps GitHub from merging the pull request whatever its statuses say, one line each: its open review threads, then changes requested; none when review lets it merge. */
 export function reviewBlockers(number: number, sh: Exec = exec): string[] {
-  const pages = ghJson<Page[]>(
+  const pages = threadPages(number, sh);
+  const blockers = openOf(pages).map(({ where, author, said }) => {
+    const by = author === undefined ? "" : ` by ${author}: ${said}`;
+    return `open review thread at ${where}${by}`;
+  });
+  if (pages[0]?.data.repository.pullRequest.reviewDecision === "CHANGES_REQUESTED")
+    blockers.push("a reviewer requested changes");
+  return blockers;
+}
+
+/** An unresolved review thread: its path:line, and who opened it with the first line they said. */
+export type OpenThread = { where: string; author?: string; said?: string };
+
+/** The pull request's unresolved review threads. */
+export const openThreads = (number: number, sh: Exec = exec) => openOf(threadPages(number, sh));
+
+const openOf = (pages: readonly Page[]): OpenThread[] =>
+  pages
+    .flatMap((page) => page.data.repository.pullRequest.reviewThreads.nodes)
+    .filter(({ isResolved }) => !isResolved)
+    .map(({ path, line, comments }) => {
+      const first = comments.nodes[0];
+      const where = `${path}${line ? `:${line}` : ""}`;
+      return first
+        ? { where, author: first.author?.login ?? "ghost", said: firstLine(first.body) }
+        : { where };
+    });
+
+function threadPages(number: number, sh: Exec): Page[] {
+  return ghJson<Page[]>(
     [
       "api",
       "graphql",
@@ -55,17 +84,6 @@ export function reviewBlockers(number: number, sh: Exec = exec): string[] {
     ],
     sh,
   );
-  const blockers = pages
-    .flatMap((page) => page.data.repository.pullRequest.reviewThreads.nodes)
-    .filter(({ isResolved }) => !isResolved)
-    .map(({ path, line, comments }) => {
-      const first = comments.nodes[0];
-      const said = first ? ` by ${first.author?.login ?? "ghost"}: ${firstLine(first.body)}` : "";
-      return `open review thread at ${path}${line ? `:${line}` : ""}${said}`;
-    });
-  if (pages[0]?.data.repository.pullRequest.reviewDecision === "CHANGES_REQUESTED")
-    blockers.push("a reviewer requested changes");
-  return blockers;
 }
 
 /** Why a pull request with review blockers isn't signed off yet. */

@@ -10,7 +10,7 @@ Rules for every temp and foreman, in every project. The project handbook (AGENTS
 ## Merging
 
 - Every merge is a squash merge: `gh pr merge --squash --delete-branch`. Never a merge commit, never a rebase merge, unless the project handbook names another method.
-- Never `gh pr merge --admin`. Let the merge queue land it; a by-hand merge is run by a person.
+- Never `gh pr merge --admin`. Let the merge step land it; a by-hand merge is run by a person.
 
 ## Gates and hooks
 

@@ -62,6 +62,45 @@ const mobile = z.strictObject({
   ),
 });
 
+const pattern = (what: string) =>
+  z
+    .string()
+    .min(1)
+    .refine((text) => {
+      try {
+        return Boolean(new RegExp(text));
+      } catch {
+        return false;
+      }
+    }, "not a valid regular expression")
+    .describe(what);
+
+const bot = z.strictObject({
+  login: z
+    .string()
+    .min(1)
+    .describe("The bot's GitHub login, with or without [bot], e.g. greptile-apps or coderabbitai"),
+  verdict: pattern(
+    "Regex whose first group is the bot's verdict, searched in the PR body and the bot's reviews and comments, latest first, e.g. greptile_confidence_score:(\\d)",
+  ).optional(),
+  pass: pattern(
+    "Regex the verdict must match for the bot to pass, e.g. ^[45]$; without it any verdict passes",
+  ).optional(),
+  threads: z
+    .enum(["findings", "advisory"])
+    .default("findings")
+    .describe(
+      "findings: each open thread of the bot's is settled before auto-merge goes on; advisory: read, and fixed only when confirmed",
+    ),
+});
+
+const reviewBots = z.strictObject({
+  bots: z
+    .record(z.string().regex(/^[a-z][a-z0-9-]*$/, "lowercase letters, digits and dashes"), bot)
+    .refine((bots) => Object.keys(bots).length > 0, "name at least one bot")
+    .describe("The review bots on the project's pull requests, by name"),
+});
+
 const module = <T extends z.ZodType>(on: T, what: string) =>
   z
     .union([z.literal("none").describe("This project doesn't use the module"), on])
@@ -76,11 +115,16 @@ export const modules = z
     ),
     screenshots: module(screenshots, "Changed screens are shot and judged by the looks inspector"),
     mobile: module(mobile, "Device checks on one simulator, and native changes left for a person"),
+    reviewBots: module(
+      reviewBots,
+      "Review bots such as Greptile or CodeRabbit: their verdict and threads settle before auto-merge goes on",
+    ),
   })
-  .default({ translations: "none", screenshots: "none", mobile: "none" })
+  .default({ translations: "none", screenshots: "none", mobile: "none", reviewBots: "none" })
   .describe("Optional capabilities the project switches on");
 
 export type Modules = z.output<typeof modules>;
 export type Translations = Exclude<Modules["translations"], "none">;
 export type Screenshots = Exclude<Modules["screenshots"], "none">;
 export type Mobile = Exclude<Modules["mobile"], "none">;
+export type ReviewBots = Exclude<Modules["reviewBots"], "none">;

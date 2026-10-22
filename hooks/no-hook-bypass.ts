@@ -8,7 +8,7 @@ const refused = (what: string) =>
 const NO_VERIFY = refused("--no-verify");
 const HOOKS_PATH = refused("overriding core.hooksPath");
 const ADMIN_MERGE =
-  "Refused: `gh pr merge --admin` skips the merge queue and the gate's checks. Turn auto-merge on and let the queue land it; a by-hand merge is run by a person, not an agent.";
+  "Refused: `gh pr merge --admin` skips the merge step and the checks it waits on. Turn auto-merge on and let the merge step land it; a by-hand merge is run by a person, not an agent.";
 
 // git's global options that take the next word as their value.
 const GLOBAL_VALUE = new Set(["-C", "-c", "--config-env", "--git-dir", "--work-tree"]);

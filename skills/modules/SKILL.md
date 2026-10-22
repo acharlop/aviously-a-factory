@@ -1,6 +1,6 @@
 ---
 name: modules
-description: How a shift uses a project's modules - when the copy desk runs, when screenshots are taken for the looks inspector, and the mobile device stage on the one machine with the simulator. Use when building a ticket in a project whose factory.config.ts switches on translations, screenshots or mobile.
+description: How a shift uses a project's modules - when the copy desk runs, when screenshots are taken for the looks inspector, the mobile device stage on the one machine with the simulator, and review bots such as Greptile or CodeRabbit. Use when building a ticket in a project whose factory.config.ts switches on translations, screenshots, mobile or reviewBots.
 ---
 
 # Modules
@@ -32,3 +32,13 @@ Read `modules` in `.factory/resolved.json` (`pnpm factory resolve` writes it). A
 The looks inspector gets the shots folder, with the screen the ticket names as its reference. Push with auto-merge on once the stage passes.
 
 **The gate's check.** With `gate.checks.<name>: { module: "mobile" }`, `factory signoff` and the merge queue run the flows `listFlows` lists between `startDevice` and `stopDevice`, three tries a flow, first building a new dev build with `buildDevice` when a native change needs one. Only the device machine runs it: elsewhere `factory signoff` refuses such a branch and the queue leaves it queued for that machine.
+
+## Review bots
+
+Bots such as Greptile and CodeRabbit review a PR once it is open, after quality control. `bots` names each one: its `login`, where its `verdict` is read, what verdict `pass`es, and whether its `threads` are `findings` or `advisory`.
+
+- **Auto-merge waits for them.** Push with auto-merge off, whatever your mode would otherwise do. At each hand-back, `pnpm factory bots <pr>` prints one `<bot>\t<pending|threads open|failed|settled>\t<verdict>\t<open threads>` a line, and exits 0 once every bot is settled. Then turn auto-merge on as your mode says, with `pnpm factory push <n> --auto-merge on` in the worktree. A bot still pending at the drain goes in the memo under waits.
+- **A findings bot's thread is a step 9 thread.** Confirm it against the code as you would an inspector's finding: confirmed, fix it on the branch (a `<n> rework` temp when it needs code, even after the change's one rework) and resolve it; not confirmed, reply with why and resolve it.
+- **An advisory bot's thread is read, not owed.** Fix it only when it is a confirmed bug; otherwise resolve it with a one-line reply.
+- **A failed verdict** (one its `pass` refuses) is a red for the memo: read the bot's summary, fix what it found the way a finding is fixed, and push; the bot's next verdict decides. A bot that reviews only once never gives a new verdict: after the fix, the PR waits on a person, in the memo.
+- **The inspectors are not replaced.** Quality control runs as always before the push; the bots read the change after it.

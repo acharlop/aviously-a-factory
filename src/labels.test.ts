@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   applyChange,
+  departmentLabel,
   describeChange,
   FACTORY_LABELS,
   type Label,
@@ -49,6 +50,14 @@ test("a project's own renames add to the factory's", () => {
   assert.deepEqual(planLabels(existing, { factory: "kind:tooling" }), [
     { action: "rename", from: "factory", label: factory("kind:tooling") },
   ]);
+});
+
+test("each department in the config gets its department: label; an area label of the same name is left alone", () => {
+  const existing = [...FACTORY_LABELS, { name: "mobile", color: "1d76db", description: "Mobile" }];
+  assert.deepEqual(planLabels(existing, {}, ["mobile"]), [
+    { action: "create", label: departmentLabel("mobile") },
+  ]);
+  assert.deepEqual(planLabels([...existing, departmentLabel("mobile")], {}, ["mobile"]), []);
 });
 
 test("a factory label with another colour, description or case is edited", () => {
