@@ -347,6 +347,123 @@
         }
       },
       "additionalProperties": false
+    },
+    "gate": {
+      "description": "The gate: the checks a change passes before it merges",
+      "default": {},
+      "type": "object",
+      "properties": {
+        "base": {
+          "default": "main",
+          "description": "The branch changes merge into",
+          "type": "string",
+          "minLength": 1
+        },
+        "checks": {
+          "default": {},
+          "description": "The checks the gate runs on a change, in order: each one is a verdict",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "run": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Shell command that runs the check in the change's checkout; the units `select` printed follow it as arguments"
+                  },
+                  "select": {
+                    "description": "Shell command run in the change's checkout with the base commit as its argument, printing the units the change needs, one per line (spec files, say); printing none means the change needs no run",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "when": {
+                    "description": "Globs of changed files that need this check, `!` excluding; any change past docs when left out",
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "timeout": {
+                    "default": "TIMEOUT_VERIFY",
+                    "description": "The machine config key whose minutes bound one run",
+                    "type": "string",
+                    "enum": [
+                      "TIMEOUT_CODER",
+                      "TIMEOUT_REVIEW",
+                      "TIMEOUT_FIX",
+                      "TIMEOUT_STRINGS",
+                      "TIMEOUT_VERIFY",
+                      "TIMEOUT_E2E",
+                      "TIMEOUT_QUEUE",
+                      "TIMEOUT_RUN"
+                    ]
+                  },
+                  "tries": {
+                    "default": 1,
+                    "description": "Runs a failing unit gets; one that fails and then passes is flaky",
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "run"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "module": {
+                    "type": "string",
+                    "description": "The module that supplies this check, such as mobile"
+                  },
+                  "when": {
+                    "description": "Globs of changed files that need this check, `!` excluding; any change past docs when left out",
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "module"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "docs": {
+          "default": [
+            "docs/**",
+            "**/*.md"
+          ],
+          "description": "Globs of files that need no check, `!` excluding",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "status": {
+          "default": "signoff/",
+          "description": "Prefix of the commit status each check posts, as in signoff/web",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [
