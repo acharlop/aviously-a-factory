@@ -1,6 +1,7 @@
 import { file1 } from "./file/v1/step.ts";
 import { realityCheck1 } from "./reality-check/v1/step.ts";
 import { gate1 } from "./gate/v1/step.ts";
+import { merge1 } from "./merge/v1/step.ts";
 import type { StepVersion } from "./step.ts";
 import { triage1 } from "./triage/v1/step.ts";
 import { claim1 } from "./claim/v1/step.ts";
@@ -20,6 +21,7 @@ export const STEP_VERSIONS: readonly StepVersion[] = [
   rework1,
   performanceReview1,
   gate1,
+  merge1,
 ];
 
 export const findStep = (name: string, version: number, versions = STEP_VERSIONS) =>
