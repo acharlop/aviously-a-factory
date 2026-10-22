@@ -36,4 +36,4 @@ Enable the plugin in `.claude/settings.json`, from this repo as a marketplace:
 }
 ```
 
-Then `pnpm factory doctor`. pnpm builds the CLI on install, so allow it: `pnpm approve-builds` or `allowBuilds` in `pnpm-workspace.yaml`.
+Then `pnpm factory doctor`. pnpm builds the CLI on install, so list `aviously-a-factory` under `onlyBuiltDependencies` in `pnpm-workspace.yaml`.
