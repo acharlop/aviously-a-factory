@@ -15,6 +15,7 @@ import { join } from "node:path";
 import type { Resolved } from "../config/load.ts";
 import type { PaperTrail } from "../config/schema.ts";
 import type { Exec } from "../runtime/exec.ts";
+import { runLockOf, takeRunLock } from "../runtime/run-lock.ts";
 import {
   bumpShiftCount,
   checkoutOf,
@@ -197,28 +198,30 @@ export async function tick(r: Runner): Promise<number> {
     if (!pid) return r.now() - statSync(lock).mtimeMs < 10 * 60_000 ? "?" : undefined;
     return r.alive(pid) ? String(pid) : undefined;
   };
-  const step = (what: string) => !dry && writeFileSync(join(lock, "step"), what);
-  if (dry) {
-    const pid = holder();
-    if (pid) say(`lock: held by pid ${pid} (${readFileSync(join(lock, "step"), "utf8").trim()})`);
-  } else {
-    const pid = holder();
-    if (pid) {
-      log(
-        `busy: ${existsSync(join(lock, "step")) ? readFileSync(join(lock, "step"), "utf8").trim() : "?"}, pid ${pid}`,
-      );
+  const step = (what: string) => !dry && writeFileSync(join(lock, "step"), `${what}\n`);
+  const pid = holder();
+  if (pid) {
+    const held = existsSync(join(lock, "step"))
+      ? readFileSync(join(lock, "step"), "utf8").trim()
+      : "?";
+    if (dry) say(`lock: held by pid ${pid} (${held})`);
+    else {
+      log(`busy: ${held}, pid ${pid}`);
       return 0;
     }
+  }
+  let release = () => {};
+  if (!dry) {
+    // Its holder is gone: takeRunLock never takes a lock that is there.
     rmSync(lock, { recursive: true, force: true });
-    mkdirSync(lock, { recursive: true });
-    writeFileSync(join(lock, "pid"), String(r.pid));
-    step("checks");
+    mkdirSync(R, { recursive: true });
+    release = takeRunLock("checks", lock, r.pid);
   }
 
   try {
     return await work();
   } finally {
-    if (!dry) rmSync(lock, { recursive: true, force: true });
+    release();
   }
 
   async function work(): Promise<number> {
@@ -505,9 +508,8 @@ export async function tick(r: Runner): Promise<number> {
           const outcome = await r.run({
             prefix: join(dir, "queue"),
             command: "pnpm",
-            args: ["--silent", "factory", "queue"],
+            args: ["--silent", "factory", "queue", "--run-dir", runDir(p)],
             cwd: p.checkout!,
-            env: { ...process.env, FACTORY_RUN_DIR: runDir(p) },
           });
           return `queue on ${p.name} ${queued}: exit ${outcome.exit}, ${duration(r.now() - started)} (log ${dir})`;
         },
@@ -542,13 +544,15 @@ export async function tick(r: Runner): Promise<number> {
     ) => {
       const count = dry ? 0 : bumpShiftCount(p.name, home);
       const dir = folder(p, `shift-${count}`);
+      // The project's run lock tells its queue a shift is on.
+      const unlock = takeRunLock(`shift ${count}`, runLockOf(projectHome(p.name, home)), r.pid);
       const ran = await claude(
         p,
         dir,
         prompt,
         note,
         preset?.minutes ?? timeoutMinutes(p.config, "TIMEOUT_RUN"),
-      );
+      ).finally(unlock);
       const memo = fileUnlessFiled(p, count, dir, ran);
       return `shift ${count} on ${p.name}${preset ? ` (${preset.name})` : ""} (${why}): ${ran.said}, ${memo} (log ${dir})`;
     };

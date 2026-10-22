@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } 
 import { dirname, join } from "node:path";
 
 import type { Exec } from "../runtime/exec.ts";
+import { takeRunLock } from "../runtime/run-lock.ts";
 import { machine } from "../runtime/github.ts";
 import {
   checkoutOf,
@@ -245,10 +246,9 @@ export function handShift(
     return 1;
   }
   rmSync(lock, { recursive: true, force: true });
-  mkdirSync(lock, { recursive: true });
+  mkdirSync(runnerHome(c.home), { recursive: true });
   // The launcher's pid until the shell below replaces it with claude's, so a failed start leaves a lock the next one clears.
-  writeFileSync(join(lock, "pid"), String(process.pid));
-  writeFileSync(join(lock, "step"), HAND);
+  takeRunLock(HAND, lock);
   const remote =
     config.REMOTE_CONTROL === "off"
       ? ""

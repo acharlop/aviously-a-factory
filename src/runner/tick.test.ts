@@ -29,6 +29,7 @@ type Fake = {
   memoIds?: string;
   outcome?: Outcome;
   freeFails?: boolean;
+  queued?: string;
 };
 
 function machine(fake: Fake = {}) {
@@ -47,6 +48,7 @@ function machine(fake: Fake = {}) {
     Object.entries(checkouts).find(([, dir]) => dir === cwd)?.[0] ?? "?";
   const calls: string[] = [];
   const jobs: Job[] = [];
+  const locked: string[] = [];
   const logLines: string[] = [];
   let off = 0;
   const ok = (stdout = "") => ({ status: 0, stdout, stderr: "" });
@@ -77,7 +79,7 @@ function machine(fake: Fake = {}) {
         : ok(fake.memoIds ?? "");
     if (command === "gh" && args[0] === "issue" && args[1] === "view")
       return ok(JSON.stringify({ state: "OPEN", comments: [{}], body: "" }));
-    if (command === "gh" && args[0] === "pr") return ok("");
+    if (command === "gh" && args[0] === "pr") return ok(fake.queued ?? "");
     return ok();
   };
   const printed: string[] = [];
@@ -86,6 +88,8 @@ function machine(fake: Fake = {}) {
     sh,
     run: async (job: Job) => {
       jobs.push(job);
+      if (existsSync(join(home, "a", "lock", "step")))
+        locked.push(readFileSync(join(home, "a", "lock", "step"), "utf8").trim());
       return (
         fake.outcome ?? {
           exit: 0,
@@ -106,7 +110,7 @@ function machine(fake: Fake = {}) {
     const file = join(home, "runner", "runner.log");
     return existsSync(file) ? readFileSync(file, "utf8").trim().split("\n").concat(logLines) : [];
   };
-  return { home, calls, jobs, printed, runner, log, offs: () => off };
+  return { home, calls, jobs, locked, printed, runner, log, offs: () => off };
 }
 
 test("ticket lines and the in-flight tickets that wait on a person", () => {
@@ -163,6 +167,8 @@ test("a shift with free tickets runs the foreman lights-out, after the runner bu
   assert.match(job!.env!.FACTORY_RUN_DIR!, /a\/runs\/\d{4}-\d{2}-\d{2}$/);
   assert.match(job!.prefix, /a\/runs\/\d{4}-\d{2}-\d{2}\/\d{6}-shift-1\/claude$/);
   assert.equal(shiftCount("a", m.home), 1);
+  assert.deepEqual(m.locked, ["shift 1"]);
+  assert.equal(existsSync(join(m.home, "a", "lock")), false);
   assert.match(m.log().at(-1)!, /shift 1 on a \(default\) \(free: #12\): exit 0, .*memo #5/);
   assert.ok(!m.calls.some((call) => call.includes("factory memo")));
 });
@@ -233,6 +239,16 @@ test("a project whose checks fail logs why, and the rota doesn't move on to its 
   await tick(m.runner());
   assert.match(m.log().at(-1)!, /not run: a: factory free failed: gh: Bad credentials/);
   assert.deepEqual(readState(join(m.home, "runner", "state")), {});
+});
+
+test("on a queue machine, PRs with auto-merge on run factory queue with the day's run folder", async () => {
+  const m = machine({ projects: { a: "QUEUE=on\n" }, queued: "#9" });
+  await tick(m.runner());
+  const [job] = m.jobs;
+  assert.equal(job!.command, "pnpm");
+  assert.deepEqual(job!.args.slice(0, 4), ["--silent", "factory", "queue", "--run-dir"]);
+  assert.match(job!.args[4]!, /a\/runs\/\d{4}-\d{2}-\d{2}$/);
+  assert.match(m.log().at(-1)!, /queue on a #9: exit 0/);
 });
 
 test("memos with news go to the meeting's Memos step, run alone", async () => {

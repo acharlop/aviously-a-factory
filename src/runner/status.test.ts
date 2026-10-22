@@ -104,9 +104,24 @@ test("the screen lists each project served, what's in flight there and its queue
   };
   mkdirSync(join(home, "a"));
   writeFileSync(join(home, "a", "config"), `CHECKOUT=${home}\n`);
-  const lines = status({ home, user: home, sh, now, alive: () => false }).join("\n");
+  const heavyLock = join(home, "locks", "heavy");
+  mkdirSync(heavyLock, { recursive: true });
+  writeFileSync(
+    join(heavyLock, "owner.json"),
+    JSON.stringify({
+      pid: 77,
+      command: "factory queue",
+      cwd: "/c",
+      startedAt: "2026-10-14T11:00:00Z",
+    }),
+  );
+  const lines = status({ home, heavyLock, user: home, sh, now, alive: () => false }).join("\n");
   assert.match(lines, /PROJECT  a · .* · shift 0 · queue off/);
   assert.match(lines, /IN FLIGHT ON a\n  #4  Fix it\n    branch web\/4-fix · next: merge/);
   assert.match(lines, /QUEUE ON a \(auto-merge on\)\n  #9  Q/);
+  assert.match(
+    lines,
+    /HEAVY    pid 77 \(`factory queue` in \/c\) since .* \(dead; the next taker clears it\)/,
+  );
   assert.match(lines, /nothing looks stuck/);
 });

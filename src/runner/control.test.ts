@@ -114,5 +114,5 @@ test("a hand-started shift runs a preset in tmux, holding the runner's lock", ()
     command,
     /exec '.*\/claude' --permission-mode auto --remote-control 'shift-[a-z0-9-]+' '\/aviously-a-factory:foreman unsupervised department:web order:priority merged:2'$/,
   );
-  assert.equal(readFileSync(join(home, "runner", "lock", "step"), "utf8"), HAND);
+  assert.equal(readFileSync(join(home, "runner", "lock", "step"), "utf8").trim(), HAND);
 });

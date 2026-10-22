@@ -4,6 +4,7 @@ import { homedir } from "node:os";
 import { basename, join } from "node:path";
 
 import type { Exec } from "../runtime/exec.ts";
+import { describeOwner, HEAVY_LOCK, lockOwner } from "../runtime/lock.ts";
 import {
   checkoutOf,
   machineConfig,
@@ -110,6 +111,8 @@ const parse = <T>(text: string | undefined): T | undefined => {
 
 export type Probe = {
   home: string;
+  /** The machine's heavy lock (Move 5's `factory lock`). */
+  heavyLock?: string;
   user: string;
   sh: Exec;
   now: number;
@@ -117,7 +120,7 @@ export type Probe = {
 };
 
 /** Every line of the status screen. */
-export function status({ home, user, sh, now, alive }: Probe): string[] {
+export function status({ home, heavyLock = HEAVY_LOCK, user, sh, now, alive }: Probe): string[] {
   const run = (command: string, args: string[], cwd?: string) => {
     const r = sh(command, args, cwd === undefined ? {} : { cwd });
     return r.status === 0 ? r.stdout.trim() : undefined;
@@ -158,6 +161,13 @@ export function status({ home, user, sh, now, alive }: Probe): string[] {
     say(
       `RUNNER   ${runnerLock.step} in progress, pid ${pid}${runnerLock.alive ? "" : " (dead)"} · stop: kill ${pid}`,
     );
+
+  const heavy = lockOwner(heavyLock);
+  say(
+    heavy
+      ? `HEAVY    ${describeOwner(heavy)}${alive(heavy.pid) ? "" : " (dead; the next taker clears it)"} · stop: kill ${heavy.pid}`
+      : "HEAVY    free",
+  );
 
   say();
   say("CLAUDE SESSIONS");
