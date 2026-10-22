@@ -6,14 +6,20 @@ import { test } from "node:test";
 
 import {
   checkSlots,
+  bumpShiftCount,
+  checkoutOf,
   loadMax,
   machineConfig,
   mobileSignoff,
   parseSettings,
   queueOn,
   queuePeer,
+  readState,
+  servedProjects,
   shiftCount,
   timeoutMinutes,
+  unattended,
+  writeState,
 } from "./machine.ts";
 
 const home = () => {
@@ -82,4 +88,26 @@ test("CHECK_SLOTS sets how many checks run at once, 2 when unset or not a positi
   assert.equal(checkSlots({ CHECK_SLOTS: "3" }), 3);
   for (const CHECK_SLOTS of ["0", "-1", "1.5", "many"])
     assert.equal(checkSlots({ CHECK_SLOTS }), 2);
+});
+
+test("a state key is set in place, keeping the others, and the shift count bumps by one", () => {
+  const dir = home();
+  const state = join(dir, "p", "state");
+  writeState(state, "TRIAGED_AT", 5);
+  assert.equal(bumpShiftCount("p", dir), 1);
+  assert.equal(bumpShiftCount("p", dir), 2);
+  writeState(state, "TRIAGED_AT", 9);
+  assert.deepEqual(readState(state), { TRIAGED_AT: "9", RUN_COUNT: "2" });
+});
+
+test("PROJECTS names the projects served, each with its CHECKOUT and UNATTENDED on unless off", () => {
+  const dir = home();
+  assert.deepEqual(servedProjects(dir), []);
+  writeFileSync(join(dir, "machine"), 'PROJECTS="yarcone, whocards"\n');
+  assert.deepEqual(servedProjects(dir), ["yarcone", "whocards"]);
+  assert.equal(checkoutOf({ CHECKOUT: "$HOME/code/yarcone" }, "/Users/j"), "/Users/j/code/yarcone");
+  assert.equal(checkoutOf({ CHECKOUT: "~/code/app" }, "/Users/j"), "/Users/j/code/app");
+  assert.equal(checkoutOf({}, "/Users/j"), undefined);
+  assert.equal(unattended({}), true);
+  assert.equal(unattended({ UNATTENDED: "off" }), false);
 });

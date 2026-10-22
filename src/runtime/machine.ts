@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { cpus, homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 /**
  * The machine config: KEY=value lines a shell runner sources as they are. `~/.factory/machine`
@@ -85,3 +85,39 @@ export function shiftCount(project: string, home = FACTORY_HOME): number {
   const count = Number(readSettings(join(projectHome(project, home), "state")).RUN_COUNT);
   return Number.isInteger(count) && count > 0 ? count : 0;
 }
+
+/** Reads a KEY=value file, such as a project's `state`; empty when it isn't there. */
+export const readState = readSettings;
+
+/** Sets one key in a KEY=value file, keeping the others. */
+export function writeState(file: string, key: string, value: string | number) {
+  const kept = existsSync(file)
+    ? readFileSync(file, "utf8")
+        .split("\n")
+        .filter((line) => line.trim() && !new RegExp(`^\\s*(?:export\\s+)?${key}=`).test(line))
+    : [];
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(`${file}.new`, [...kept, `${key}=${value}`, ""].join("\n"));
+  renameSync(`${file}.new`, file);
+}
+
+/** Adds one to the project's shift count and returns it, as the runner does before a lights-out shift. */
+export function bumpShiftCount(project: string, home = FACTORY_HOME): number {
+  const count = shiftCount(project, home) + 1;
+  writeState(join(projectHome(project, home), "state"), "RUN_COUNT", count);
+  return count;
+}
+
+/** The runner's own folder: its log, lock, rota state and stopping flag. */
+export const runnerHome = (home = FACTORY_HOME) => join(home, "runner");
+
+/** The projects this machine serves (`PROJECTS` in `~/.factory/machine`), in the order the rota visits them. */
+export const servedProjects = (home = FACTORY_HOME) =>
+  (readSettings(join(home, "machine")).PROJECTS ?? "").split(/[\s,]+/).filter(Boolean);
+
+/** The project's checkout on this machine (`CHECKOUT`), with a leading `~` or `$HOME` expanded. */
+export const checkoutOf = (config: MachineConfig, user = homedir()) =>
+  config.CHECKOUT?.replace(/^(?:~|\$HOME|\$\{HOME\})(?=\/|$)/, user) || undefined;
+
+/** Whether the runner works lights-out shifts on the project here (`UNATTENDED`, on unless set to off). */
+export const unattended = (config: MachineConfig) => config.UNATTENDED !== "off";

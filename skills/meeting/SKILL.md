@@ -44,7 +44,7 @@ Comment one line on why when the route isn't obvious from the ticket.
 
 Every meeting. Memos are the open issues labelled `paperTrail.memoLabel` in the `paperTrail.repo` that `.factory/resolved.json` names; with `paperTrail: "none"` there are none, so skip this step. Bring each open memo's unticked follow-ups as a round: accept, change or drop each. Tick what is accepted and comment a change or a drop on the memo. Accepted lines on one theme in the same files are filed as one ticket with a box each (3 at most), labelled `p3` unless the answer raises it. End each box's line with `→ <ticket link>`, or a dropped one's with `→ <link to the comment>`: the File step closes a past day's memo once every box is settled that way. Calls made stand unless someone comments; raise one only when it looks wrong.
 
-**Run alone, unattended.** The runner's feedback step runs only this step, with no person present, on the memos it names: ticks and comments there are already a person's answers. A comment asking for a change, a ticked follow-up, or a line left unticked once its memo is closed becomes a follow-up ticket as above, with a reply on the memo linking it. Skip what a reply on the memo already answers. Ask nothing, route nothing else, and claim or build nothing.
+**Run alone, unattended.** The runner's memos step runs only this step, with no person present, on the memos it names: ticks and comments there are already a person's answers. A comment asking for a change, a ticked follow-up, or a line left unticked once its memo is closed becomes a follow-up ticket as above, with a reply on the memo linking it. Skip what a reply on the memo already answers. Ask nothing, route nothing else, and claim or build nothing.
 
 ## 3. Lost and found
 
