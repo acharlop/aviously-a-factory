@@ -69,6 +69,7 @@ test("the paper trail is none unless the project names a repo, whose layout then
       timesheet: "timesheets/shifts.jsonl",
       signOffs: "sign-offs",
       memoLabel: "memo",
+      suggestionBox: "suggestion-box",
     },
   );
   assert.throws(

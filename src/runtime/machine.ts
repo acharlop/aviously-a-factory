@@ -41,6 +41,10 @@ const readSettings = (file: string) =>
 /** Where this machine keeps one project's config, state, marks and run folders. */
 export const projectHome = (project: string, home = FACTORY_HOME) => join(home, project);
 
+/** The folder a shift on `date` (YYYY-MM-DD) keeps its notes and patches in when the runner names none. */
+export const runFolder = (project: string, date: string, home = FACTORY_HOME) =>
+  join(projectHome(project, home), "runs", date);
+
 /** The machine-wide settings, with the project's own on top. */
 export const machineConfig = (project: string, home = FACTORY_HOME): MachineConfig => ({
   ...readSettings(join(home, "machine")),

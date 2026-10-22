@@ -87,6 +87,7 @@ const trail: PaperTrail = {
   timesheet: "timesheets/shifts.jsonl",
   signOffs: "sign-offs",
   memoLabel: "memo",
+  suggestionBox: "suggestion-box",
 };
 
 test("the queue counts test branches in the window, flakes, drops and every PR it landed; green first try only when a branch landed all its PRs", () => {
@@ -111,6 +112,8 @@ test("review bugs are the items under the rework report's heading, none without 
   ].join("\n");
   assert.equal(reviewBugs(report), 2);
   assert.equal(reviewBugs("Bugs fixed from review: none\n\n- pnpm verify passed"), 0);
+  assert.equal(reviewBugs("Bugs fixed from quality control:\n- one"), 1);
+  assert.equal(reviewBugs("Bugs fixed from quality control: none\n- one"), 0);
   assert.equal(reviewBugs("Fixed two findings."), 0);
 });
 

@@ -87,6 +87,12 @@
               "description": "Label on each memo, an issue in the repository per machine per day",
               "type": "string",
               "minLength": 1
+            },
+            "suggestionBox": {
+              "default": "suggestion-box",
+              "description": "Folder for the suggestion box: each shift's notes in a folder per day, and reviews.jsonl, one line per performance review",
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": [
@@ -289,6 +295,55 @@
               "additionalProperties": false
             }
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "foreman": {
+      "default": {
+        "security": [],
+        "migrations": [],
+        "heavy": []
+      },
+      "description": "How the foreman sets up worktrees, picks inspectors and pushes",
+      "type": "object",
+      "properties": {
+        "setup": {
+          "description": "Runs in each new worktree before its temp starts, e.g. pnpm wt:setup",
+          "type": "string",
+          "minLength": 1
+        },
+        "teardown": {
+          "description": "Runs in a merged worktree before factory clean removes it, e.g. to drop its databases",
+          "type": "string",
+          "minLength": 1
+        },
+        "security": {
+          "default": [],
+          "description": "Globs, from the project root, of files whose change also gets the security inspector",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "migrations": {
+          "default": [],
+          "description": "Globs of schema files whose change needs a migration generated before factory push",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "heavy": {
+          "default": [],
+          "description": "Commands factory calls counts on rows of their own, e.g. pnpm e2e:spec",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       },
       "additionalProperties": false

@@ -31,6 +31,11 @@ export const FACTORY_LABELS: readonly Label[] = [
     description: "Waits on someone or something outside the repo",
   },
   { name: "Parked", color: "bfbfbf", description: "Not now, by choice" },
+  {
+    name: "in-progress",
+    color: "fbca04",
+    description: "Claimed: a shift builds it on the branch its claim comment names",
+  },
   { name: "epic", color: "3e4b9e", description: "Groups tickets" },
   {
     name: "odd jobs",

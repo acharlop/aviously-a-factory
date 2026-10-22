@@ -251,7 +251,7 @@ test("a session that starts with /model before /factory is still a shift", () =>
 });
 
 test("a shift the runner started, under a project's skill name or the plugin's, keeps its mode", () => {
-  for (const skill of ["yarcone-factory", "factory"]) {
+  for (const skill of ["yarcone-factory", "factory", "aviously-a-factory:foreman"]) {
     const prompt = `Invoke the ${skill} skill with args \`unsupervised 2\` and follow it to its report.`;
     assert.match(
       invocation(jsonl([said(prompt, 0), reply("lead-1", 1, [1, 1, 1], 1)])) ?? "",
@@ -282,6 +282,7 @@ test("a project's /<name>-factory and the plugin's /<plugin>:factory are shifts;
     ),
   );
   assert.ok(invokesFactory(jsonl([said("/aviously-a-factory:factory 3", 0)])));
+  assert.ok(invokesFactory(jsonl([said("/aviously-a-factory:foreman lights-out", 0)])));
   assert.ok(!invokesFactory(jsonl([said("why did the factory skill stop?", 0)])));
 });
 
