@@ -108,6 +108,23 @@ Prose that agents read (domain words, where state lives, decisions not to undo) 
 
 `~/.factory/machine` holds which roles this machine takes per project (queue, mobile sign-off, unattended shifts), its rota and named shift presets. Projects never name a machine. Per-project state lives in `~/.factory/<project>/`.
 
+KEY=value lines, as a shell sources them:
+
+| Key                   | Where              | Means                                                                                                     |
+| --------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
+| `PROJECTS`            | `machine`          | The projects this machine serves, in turn                                                                 |
+| `ROTA`                | `machine`          | Preset names and `lunch:<minutes>`, in order; unset, one `default` shift                                  |
+| `SHIFT_<NAME>`        | `machine`          | A preset: `[mode] [project:<p>] [department:<d>]... [kind:<k>]... [order:<o>] [merged:<n>] [minutes:<n>]` |
+| `CLAUDE`, `MAX_TURNS` | `machine`          | The claude binary (`~/.local/bin/claude`) and `--max-turns` (400)                                         |
+| `CHECKOUT`            | `<project>/config` | The project's checkout, on main                                                                           |
+| `QUEUE`, `QUEUE_PEER` | either             | `QUEUE=on` runs the merge queue here, and the nightly                                                     |
+| `MOBILE_SIGNOFF`      | either             | `on` where the simulator is                                                                               |
+| `UNATTENDED`          | either             | `off` keeps lights-out shifts off this machine for the project                                            |
+| `NIGHTLY`             | `<project>/config` | A command run once a day where `QUEUE=on`, such as the project's full end-to-end suite                    |
+| `TIMEOUT_*`           | either             | Minutes per step (the foreman skill, Timeouts); `TIMEOUT_RUN` caps a shift with no `minutes:`             |
+
+`factory runner` is the one runner per machine. launchd wakes `factory runner tick` every 15 minutes (`factory runner plist` prints the job; `on`, `off` and `stop` load, unload and drain it). Each wake-up takes the first of: memos with news (the meeting's step 2, alone), the queue, the rota's next shift with work, triage, a due performance review, the nightly. A shift is one lights-out foreman session; the runner bumps `RUN_COUNT`, skips a shift with nothing free and nothing in flight, and files the memo and timesheet itself when a shift dies before its own. A usage limit starts a lunch break until it lifts. `factory runner shift <project> [<preset>]` starts a supervised one by hand in tmux.
+
 ### What the factory owns
 
 - The route labels: ready-for-agent, decision needed, ready-for-human, to-discuss, blocked, Parked.

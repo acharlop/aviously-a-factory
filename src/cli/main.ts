@@ -13,6 +13,7 @@ import { untriaged } from "./untriaged.ts";
 import { claim, free, inFlight, inspectors, park, push } from "./foreman.ts";
 import { reviewDone, reviewDue, suggestionBox } from "./file.ts";
 import { calls, clean, commentEdit, epicClose, stopE2e, timings, usage } from "./shift.ts";
+import { runner } from "./runner.ts";
 
 const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promise<number> }> = {
   doctor: { summary: "Check the config, the plugin and this machine", run: doctor },
@@ -138,6 +139,11 @@ const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promi
     summary:
       "Land the pull requests with auto-merge on, gated here ([--all] [--dry-run] [--checkout <path>] [--run-dir <path>])",
     run: queue,
+  },
+  runner: {
+    summary:
+      "This machine's runner, which works the rota across its projects (tick [--dry-run] | status | on | off | stop | plist | shift)",
+    run: runner,
   },
 };
 
