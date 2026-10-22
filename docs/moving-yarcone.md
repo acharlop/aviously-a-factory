@@ -73,7 +73,7 @@ The `pnpm factory:*` aliases exist only during the move. After move 8, plugin sk
 
 ### Carried over, not copied
 
-- `factory-tick`'s feedback step asks for SKILL.md step 2, Feedback, which no longer exists (digest feedback lives in yarcone-decide step 2). The port uses the meeting step instead.
+- `factory-tick`'s feedback step asks for SKILL.md step 2, Feedback, which no longer exists (digest feedback lives in yarcone-decide step 2). The port points it at the `meeting` skill's step 2, Memos, which runs alone unattended for exactly this.
 - The weekly step calls a `security:weekly` script that main doesn't have. The port either drops it or makes it a real step. It is not copied as is.
 
 ### Also sorted during the move

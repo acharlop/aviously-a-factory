@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
+import { frontmatter } from "./plugin-files.fixture.ts";
 import { installedPluginVersion } from "./plugin.ts";
-import { FACTORY_VERSION, pluginManifestVersion } from "./version.ts";
+import { FACTORY_VERSION, PACKAGE_ROOT, pluginManifestVersion } from "./version.ts";
 
 const claudeHome = (plugins: object) => {
   const home = mkdtempSync(join(tmpdir(), "factory-claude-"));
@@ -50,4 +51,12 @@ test("no install, no version", () => {
     installedPluginVersion("/p", {}, mkdtempSync(join(tmpdir(), "factory-empty-"))),
     undefined,
   );
+});
+
+test("each plugin skill is named after its folder and has a description", () => {
+  for (const name of readdirSync(new URL("skills", PACKAGE_ROOT))) {
+    const { name: declared, description } = frontmatter(`skills/${name}/SKILL.md`);
+    assert.equal(declared, name);
+    assert.ok(description);
+  }
 });

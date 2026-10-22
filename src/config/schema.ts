@@ -49,6 +49,10 @@ const paperTrail = z
 
 const fields = {
   configVersion: z.literal(CONFIG_VERSION),
+  departments: z
+    .array(z.string().regex(/^[a-z0-9-]+$/))
+    .default([])
+    .describe("The departments tickets are filed under, each a department:<name> label"),
   steps: z
     .record(z.string(), stepPin)
     .default({})
