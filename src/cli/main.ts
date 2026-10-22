@@ -4,10 +4,15 @@ import { jsonSchema } from "../config/schema.ts";
 import { FACTORY_VERSION } from "../version.ts";
 import { doctor } from "./doctor.ts";
 import { memo, timesheet } from "./file.ts";
+import { labels } from "./labels.ts";
 import { migrate } from "./migrate.ts";
 
 const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promise<number> }> = {
   doctor: { summary: "Check the config, the plugin and this machine", run: doctor },
+  labels: {
+    summary: "Show how the repo's labels differ from the factory set; --apply fixes them",
+    run: (args) => labels(args),
+  },
   resolve: {
     summary: "Validate factory.config.ts and write .factory/resolved.json",
     run: async () => {

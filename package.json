@@ -30,7 +30,7 @@
     "lint": "oxlint .",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "test": "node --test 'src/**/*.test.ts'",
+    "test": "node --test 'src/**/*.test.ts' 'hooks/*.test.ts'",
     "verify": "pnpm format:check && pnpm lint && pnpm check-types && pnpm test && pnpm build"
   },
   "dependencies": {

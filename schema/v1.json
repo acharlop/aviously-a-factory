@@ -86,6 +86,17 @@
           "additionalProperties": false
         }
       ]
+    },
+    "labelRenames": {
+      "default": {},
+      "description": "Old label names this project renames to factory labels, beyond the factory's own list, e.g. { factory: \"kind:tooling\" }",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   },
   "required": [

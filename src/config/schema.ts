@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { FACTORY_LABELS } from "../labels.ts";
 import { findStep, STEP_VERSIONS, stepNames } from "../steps/registry.ts";
 import type { StepVersion } from "../steps/step.ts";
 
@@ -53,6 +54,12 @@ const fields = {
     .default({})
     .describe("The version each step runs at. A step left out runs at its oldest live version"),
   paperTrail,
+  labelRenames: z
+    .record(z.string(), z.string())
+    .default({})
+    .describe(
+      'Old label names this project renames to factory labels, beyond the factory\'s own list, e.g. { factory: "kind:tooling" }',
+    ),
 };
 
 /** The config schema, checking step pins against `registry`. */
@@ -74,6 +81,13 @@ export const schemaFor = (registry: readonly StepVersion[]) =>
           message: `${name}@${pin} does not exist in this factory release`,
         });
     }
+    for (const [from, to] of Object.entries(config.labelRenames))
+      if (!FACTORY_LABELS.some((label) => label.name === to))
+        ctx.addIssue({
+          code: "custom",
+          path: ["labelRenames", from],
+          message: `"${to}" is not a factory label; known: ${FACTORY_LABELS.map((label) => label.name).join(", ")}`,
+        });
   });
 
 export const configSchema = schemaFor(STEP_VERSIONS);
