@@ -6,6 +6,7 @@ import { doctor } from "./doctor.ts";
 import { memo, timesheet } from "./file.ts";
 import { labels } from "./labels.ts";
 import { migrate } from "./migrate.ts";
+import { mobile } from "./mobile.ts";
 import { untriaged } from "./untriaged.ts";
 
 const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promise<number> }> = {
@@ -40,6 +41,11 @@ const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promi
     run: memo,
   },
   untriaged: { summary: "List the open tickets the receptionist has yet to route", run: untriaged },
+  mobile: {
+    summary:
+      "device: whether this machine runs device checks; native <base> [<head>]: what needs a new dev build",
+    run: mobile,
+  },
   version: {
     summary: "Print the factory release",
     run: async () => {

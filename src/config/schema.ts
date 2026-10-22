@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { FACTORY_LABELS } from "../labels.ts";
+import { modules } from "../modules/schema.ts";
 import { findStep, STEP_VERSIONS, stepNames } from "../steps/registry.ts";
 import type { StepVersion } from "../steps/step.ts";
 
@@ -64,6 +65,7 @@ const fields = {
     .describe(
       'Old label names this project renames to factory labels, beyond the factory\'s own list, e.g. { factory: "kind:tooling" }',
     ),
+  modules,
 };
 
 /** The config schema, checking step pins against `registry`. */
