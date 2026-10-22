@@ -77,6 +77,17 @@ test("the paper trail is none unless the project names a repo, whose layout then
   );
 });
 
+test("a label rename must end at a factory label", () => {
+  assert.throws(
+    () => parseConfig({ configVersion: 1, labelRenames: { factory: "tooling" } }),
+    /"tooling" is not a factory label/,
+  );
+  assert.deepEqual(
+    parseConfig({ configVersion: 1, labelRenames: { factory: "kind:tooling" } }).labelRenames,
+    { factory: "kind:tooling" },
+  );
+});
+
 test("pins resolve to a version, none, or a local path; unpinned steps take their oldest live version", () => {
   const config = parseConfig(
     { configVersion: 1, steps: { review: 1, merge: { local: "steps/merge.ts" } } },
