@@ -3,6 +3,7 @@ import { ConfigError, loadProject } from "../config/load.ts";
 import { jsonSchema } from "../config/schema.ts";
 import { FACTORY_VERSION } from "../version.ts";
 import { doctor } from "./doctor.ts";
+import { memo, timesheet } from "./file.ts";
 import { migrate } from "./migrate.ts";
 
 const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promise<number> }> = {
@@ -22,6 +23,16 @@ const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promi
     },
   },
   migrate: { summary: "Upgrade factory.config.ts to this release's configVersion", run: migrate },
+  timesheet: {
+    summary:
+      "File the shift's timesheet row ([<session-id>] [--dry-run]), or --report the last 7 and 30 days",
+    run: timesheet,
+  },
+  memo: {
+    summary:
+      "File the shift's section on this machine's memo for the day (<input.json> [--dry-run] [--run-dir <path>])",
+    run: memo,
+  },
   version: {
     summary: "Print the factory release",
     run: async () => {

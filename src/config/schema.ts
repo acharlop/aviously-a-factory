@@ -16,12 +16,43 @@ const stepPin = z.union([
     .describe("A local step: the project supplies this step itself"),
 ]);
 
+const paperTrail = z
+  .union([
+    z.literal("none").describe("This project keeps no paper trail"),
+    z.strictObject({
+      repo: z
+        .string()
+        .regex(/^[\w.-]+\/[\w.-]+$/, "owner/name")
+        .describe("owner/name of the repository the File step writes to"),
+      timesheet: z
+        .string()
+        .min(1)
+        .default("timesheets/shifts.jsonl")
+        .describe(
+          "Path of the timesheet: one JSON line per shift, its table in README.md beside it",
+        ),
+      signOffs: z
+        .string()
+        .min(1)
+        .default("sign-offs")
+        .describe("Folder for sign-offs: one JSON file each, in a folder per day"),
+      memoLabel: z
+        .string()
+        .min(1)
+        .default("memo")
+        .describe("Label on each memo, an issue in the repository per machine per day"),
+    }),
+  ])
+  .default("none")
+  .describe("Where the File step writes timesheets, memos and sign-offs");
+
 const fields = {
   configVersion: z.literal(CONFIG_VERSION),
   steps: z
     .record(z.string(), stepPin)
     .default({})
     .describe("The version each step runs at. A step left out runs at its oldest live version"),
+  paperTrail,
 };
 
 /** The config schema, checking step pins against `registry`. */
@@ -50,6 +81,7 @@ export const configSchema = schemaFor(STEP_VERSIONS);
 /** What a project writes in factory.config.ts. */
 export type FactoryConfigInput = z.input<typeof configSchema>;
 export type FactoryConfig = z.output<typeof configSchema>;
+export type PaperTrail = Exclude<FactoryConfig["paperTrail"], "none">;
 
 export const jsonSchema = () =>
   z.toJSONSchema(configSchema, { io: "input", unrepresentable: "any" });
