@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { FACTORY_LABELS } from "../../../labels.ts";
+import { pluginFile } from "../../../plugin-files.fixture.ts";
 import { claimComment, claimedBranch, latestClaim } from "../../../runtime/ticket.ts";
 import { type Candidate, freeTickets, ORDERS } from "./free.ts";
 import { giveBack } from "./park.ts";
@@ -47,4 +48,16 @@ test("every order takes only ready-for-agent tickets nobody holds", () => {
       [1],
       order,
     );
+});
+
+test("the foreman takes tickets with factory free and claims each with factory claim, before any code", () => {
+  const skill = pluginFile("skills/foreman/SKILL.md");
+  for (const order of ORDERS) assert.ok(skill.includes(order), order);
+  assert.ok(
+    skill.includes(
+      "`pnpm factory free [--department <name>]... [--kind <kind>]... [--order <order>]`",
+    ),
+  );
+  assert.ok(skill.includes("`pnpm factory claim <n> <branch>`"));
+  assert.ok(skill.includes("`pnpm factory in-flight --run-dir <dir>`"));
 });

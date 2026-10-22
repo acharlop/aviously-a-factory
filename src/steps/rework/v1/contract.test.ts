@@ -22,3 +22,9 @@ test("the Reviewed comment the temp writes by hand is the one rework@1 reads", (
   assert.equal(written, reviewedComment("<head sha>"));
   assert.ok(reviewedAt([{ body: written!.replace("<head sha>", HEAD) }], HEAD));
 });
+
+test("the foreman briefs one rework temp per change and pushes with factory push", () => {
+  const skill = pluginFile("skills/foreman/SKILL.md");
+  assert.ok(skill.includes("described `<n> rework`, once per change"));
+  assert.ok(skill.includes("`pnpm factory push <n> --auto-merge on|off [--shots <dir>]`"));
+});
