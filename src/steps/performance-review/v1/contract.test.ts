@@ -24,3 +24,13 @@ test("HR reads the suggestion box and records the review through the paper trail
   assert.match(text, /Factory handbook[\s\S]*Project handbook/);
   assert.match(text, /Never turn auto-merge on, merge, or file tickets/);
 });
+
+test("the foreman drops the shift's suggestions, then starts HR only when factory review-due prints due", () => {
+  const skill = pluginFile("skills/foreman/SKILL.md");
+  assert.ok(skill.includes("`pnpm factory suggestion-box drop <run folder>/suggestions.md`"));
+  assert.ok(
+    skill.includes(
+      "when `pnpm factory review-due` prints `due`, start HR (`steps.performance-review`)",
+    ),
+  );
+});

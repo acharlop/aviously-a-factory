@@ -48,3 +48,11 @@ test("quality control is done once its report on the head is in the run folder, 
   assert.ok(inspected({ ...state, report: { findings: 0 } }));
   assert.ok(inspected({ ...state, comments: [{ body: reviewedComment(head.slice(0, 8)) }] }));
 });
+
+test("the foreman starts the inspectors factory inspectors lists, and writes the report where quality-control@1 reads it", () => {
+  const skill = pluginFile("skills/foreman/SKILL.md");
+  assert.ok(skill.includes("`pnpm factory inspectors`"));
+  assert.ok(skill.includes("`<run folder>/<n>-quality-control-<first 12 of the head sha>.md`"));
+  assert.ok(skill.includes("its first line `Findings: <k>`"));
+  assert.match(reportFile("/r", 1, "a".repeat(40)), /\/1-quality-control-a{12}\.md$/);
+});
