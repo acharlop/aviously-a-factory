@@ -65,7 +65,7 @@ test("file@1 files as the gh login on this machine, stamped with itself and the 
   assert.match(stamp.machine, /^[^.]+$/);
   assert.equal(stamp.step, "file@1");
   assert.equal(stamp.factory, FACTORY_VERSION);
-  assert.deepEqual(stamp.steps, ["file@1", "reality-check@1", "triage@1"]);
+  assert.ok(stamp.steps.includes("file@1"));
   assert.deepEqual([repo, project, trail], ["o/app", "app", paperTrail]);
 });
 

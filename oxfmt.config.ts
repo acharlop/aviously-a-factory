@@ -1,5 +1,5 @@
 import { defineConfig } from "oxfmt";
 
 export default defineConfig({
-  ignorePatterns: ["schema/**"],
+  ignorePatterns: ["schema/**", ".claude/worktrees/**"],
 });
