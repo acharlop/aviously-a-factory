@@ -21,6 +21,7 @@ const TIMEOUTS = {
   TIMEOUT_RUN: 150,
 } as const;
 export type Timeout = keyof typeof TIMEOUTS;
+export const TIMEOUT_KEYS = Object.keys(TIMEOUTS) as [Timeout, ...Timeout[]];
 
 export type MachineConfig = Record<string, string>;
 
@@ -45,11 +46,20 @@ export const projectHome = (project: string, home = FACTORY_HOME) => join(home, 
 export const runFolder = (project: string, date: string, home = FACTORY_HOME) =>
   join(projectHome(project, home), "runs", date);
 
+/** What is true for every project on this machine. */
+export const machineWide = (home = FACTORY_HOME) => readSettings(join(home, "machine"));
+
 /** The machine-wide settings, with the project's own on top. */
 export const machineConfig = (project: string, home = FACTORY_HOME): MachineConfig => ({
-  ...readSettings(join(home, "machine")),
+  ...machineWide(home),
   ...readSettings(join(projectHome(project, home), "config")),
 });
+
+/** How many checks may run at once on this machine (`CHECK_SLOTS`), 2 by default. */
+export function checkSlots(config: MachineConfig): number {
+  const slots = Number(config.CHECK_SLOTS);
+  return Number.isInteger(slots) && slots > 0 ? slots : 2;
+}
 
 export const queueOn = (config: MachineConfig) => config.QUEUE === "on";
 

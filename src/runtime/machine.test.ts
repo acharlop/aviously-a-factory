@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 import {
+  checkSlots,
   loadMax,
   machineConfig,
   mobileSignoff,
@@ -74,4 +75,11 @@ test("the shift count is RUN_COUNT in the project's state, 0 before the first sh
   assert.equal(shiftCount("p", dir), 0);
   writeFileSync(join(dir, "p", "state"), "RUN_COUNT=7\n");
   assert.equal(shiftCount("p", dir), 7);
+});
+
+test("CHECK_SLOTS sets how many checks run at once, 2 when unset or not a positive whole number", () => {
+  assert.equal(checkSlots({}), 2);
+  assert.equal(checkSlots({ CHECK_SLOTS: "3" }), 3);
+  for (const CHECK_SLOTS of ["0", "-1", "1.5", "many"])
+    assert.equal(checkSlots({ CHECK_SLOTS }), 2);
 });

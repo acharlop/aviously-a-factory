@@ -5,6 +5,7 @@ import { FACTORY_VERSION } from "../version.ts";
 import { doctor } from "./doctor.ts";
 import { memo, timesheet } from "./file.ts";
 import { labels } from "./labels.ts";
+import { gate, lock, signoff } from "./gate.ts";
 import { migrate } from "./migrate.ts";
 import { mobile } from "./mobile.ts";
 import { untriaged } from "./untriaged.ts";
@@ -118,6 +119,19 @@ const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promi
   "review-done": {
     summary: "Record a performance review (--through <entry> [<pr-url>...])",
     run: reviewDone,
+  },
+  signoff: {
+    summary:
+      "Sign off this branch here: merge the base in, run its checks, push, post their statuses",
+    run: signoff,
+  },
+  gate: {
+    summary: "The gate's pieces for git hooks: checks, base, passed, record (factory gate help)",
+    run: gate,
+  },
+  lock: {
+    summary: "Run a command under this machine's heavy lock, or a check slot ([--checks] -- <cmd>)",
+    run: lock,
   },
 };
 

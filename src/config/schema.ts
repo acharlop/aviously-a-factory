@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 import { FACTORY_LABELS } from "../labels.ts";
+import { findModule } from "../modules/registry.ts";
 import { modules } from "../modules/schema.ts";
+import { TIMEOUT_KEYS } from "../runtime/machine.ts";
 import { findStep, STEP_VERSIONS, stepNames } from "../steps/registry.ts";
 import type { StepVersion } from "../steps/step.ts";
 
@@ -85,6 +87,70 @@ const foreman = z
   .default({ security: [], migrations: [], heavy: [] })
   .describe("How the foreman sets up worktrees, picks inspectors and pushes");
 
+const when = z
+  .array(z.string().min(1))
+  .min(1)
+  .optional()
+  .describe(
+    "Globs of changed files that need this check, `!` excluding; any change past docs when left out",
+  );
+
+const check = z.union([
+  z.strictObject({
+    run: z
+      .string()
+      .min(1)
+      .describe(
+        "Shell command that runs the check in the change's checkout; the units `select` printed follow it as arguments",
+      ),
+    select: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        "Shell command run in the change's checkout with the base commit as its argument, printing the units the change needs, one per line (spec files, say); printing none means the change needs no run",
+      ),
+    when,
+    timeout: z
+      .enum(TIMEOUT_KEYS)
+      .default("TIMEOUT_VERIFY")
+      .describe("The machine config key whose minutes bound one run"),
+    tries: z
+      .number()
+      .int()
+      .positive()
+      .default(1)
+      .describe("Runs a failing unit gets; one that fails and then passes is flaky"),
+  }),
+  z.strictObject({
+    module: z
+      .string()
+      .refine((name) => findModule(name)?.check, "no module by that name supplies a check")
+      .describe("The module that supplies this check, such as mobile"),
+    when,
+  }),
+]);
+
+const gate = z
+  .strictObject({
+    base: z.string().min(1).default("main").describe("The branch changes merge into"),
+    checks: z
+      .record(z.string().regex(/^[a-z][a-z0-9-]*$/, "lowercase letters, digits and dashes"), check)
+      .default({})
+      .describe("The checks the gate runs on a change, in order: each one is a verdict"),
+    docs: z
+      .array(z.string().min(1))
+      .default(["docs/**", "**/*.md"])
+      .describe("Globs of files that need no check, `!` excluding"),
+    status: z
+      .string()
+      .min(1)
+      .default("signoff/")
+      .describe("Prefix of the commit status each check posts, as in signoff/web"),
+  })
+  .prefault({})
+  .describe("The gate: the checks a change passes before it merges");
+
 const fields = {
   configVersion: z.literal(CONFIG_VERSION),
   departments: z
@@ -104,6 +170,7 @@ const fields = {
     ),
   modules,
   foreman,
+  gate,
 };
 
 /** The config schema, checking step pins against `registry`. */
@@ -141,6 +208,7 @@ export type FactoryConfigInput = z.input<typeof configSchema>;
 export type FactoryConfig = z.output<typeof configSchema>;
 export type PaperTrail = Exclude<FactoryConfig["paperTrail"], "none">;
 export type Foreman = FactoryConfig["foreman"];
+export type Gate = FactoryConfig["gate"];
 
 export const jsonSchema = () =>
   z.toJSONSchema(configSchema, { io: "input", unrepresentable: "any" });
