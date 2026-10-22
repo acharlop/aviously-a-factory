@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { z } from "zod";
 
+import type { Modules } from "../modules/schema.ts";
 import { findStep, STEP_VERSIONS, stepNames } from "../steps/registry.ts";
 import type { StepVersion } from "../steps/step.ts";
 import { FACTORY_VERSION } from "../version.ts";
@@ -50,6 +51,7 @@ export type Resolved = {
   departments: string[];
   steps: Record<string, ResolvedStep>;
   paperTrail: PaperTrail | "none";
+  modules: Modules;
 };
 
 /** The version an unpinned step runs: its oldest live one, so a factory upgrade never changes it unasked. */
@@ -86,6 +88,7 @@ export function resolveConfig(
     departments: config.departments,
     steps,
     paperTrail: config.paperTrail,
+    modules: config.modules,
   };
 }
 

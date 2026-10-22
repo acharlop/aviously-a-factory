@@ -106,6 +106,192 @@
       "additionalProperties": {
         "type": "string"
       }
+    },
+    "modules": {
+      "default": {
+        "translations": "none",
+        "screenshots": "none",
+        "mobile": "none"
+      },
+      "description": "Optional capabilities the project switches on",
+      "type": "object",
+      "properties": {
+        "translations": {
+          "default": "none",
+          "description": "The copy desk settles the final English and every translation",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "none",
+              "description": "This project doesn't use the module"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "default": "en",
+                  "description": "The locale the copy desk writes first",
+                  "type": "string",
+                  "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                },
+                "locales": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                  },
+                  "description": "Every other locale the copy desk translates into, e.g. he, ar, ru, fr"
+                },
+                "catalog": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\{locale\\}",
+                  "description": "Path of one locale's message catalog, with {locale} where the locale goes, from the project root"
+                },
+                "copyRules": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The project's copy rules, which the English is rewritten to, from the project root"
+                },
+                "glossary": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The term list every locale must use, from the project root"
+                },
+                "changed": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Lists the catalog keys a branch added or changed, with the base ref appended"
+                },
+                "checks": {
+                  "default": [],
+                  "description": "Commands the copy desk runs before each commit, all of which must pass",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "A check the catalogs must pass"
+                  }
+                }
+              },
+              "required": [
+                "locales",
+                "catalog",
+                "copyRules",
+                "changed"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "screenshots": {
+          "default": "none",
+          "description": "Changed screens are shot and judged by the looks inspector",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "none",
+              "description": "This project doesn't use the module"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Takes screenshots of the changed screens into the folder in $SHOTS_DIR"
+                },
+                "locales": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+                  },
+                  "description": "The locales each screen is shot in; add a right-to-left one if the project has one"
+                },
+                "references": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The doc naming the reference screens a new screen must look like; a ticket may name its own, from the project root"
+                }
+              },
+              "required": [
+                "command",
+                "locales",
+                "references"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "mobile": {
+          "default": "none",
+          "description": "Device checks on one simulator, and native changes left for a person",
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "none",
+              "description": "This project doesn't use the module"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "department": {
+                  "default": "mobile",
+                  "description": "The department of tickets built on the machine with the simulator",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "app": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The mobile app's folder, whose package.json dependencies are native, from the project root"
+                },
+                "native": {
+                  "default": [],
+                  "description": "Globs, from the project root, of files whose change needs a new dev build, e.g. apps/mobile/ios/**",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "startDevice": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Starts a device check on this machine's simulator"
+                },
+                "stopDevice": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Stops the device check, whatever happened"
+                },
+                "listFlows": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Lists the end-to-end flows a branch reaches, without running them"
+                },
+                "runFlows": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Runs the flows a branch reaches, with a folder appended for each flow's last screen"
+                }
+              },
+              "required": [
+                "app",
+                "startDevice",
+                "stopDevice",
+                "listFlows",
+                "runFlows"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [
