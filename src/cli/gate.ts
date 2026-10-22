@@ -7,7 +7,7 @@ import { changedFiles, checksFor, projectChecks } from "../runtime/checks.ts";
 import { exec } from "../runtime/exec.ts";
 import { repoName } from "../runtime/github.ts";
 import { HEAVY_LOCK, holdCheckSlot, holdLock, runHeavy } from "../runtime/lock.ts";
-import { machineConfig, timeoutMinutes } from "../runtime/machine.ts";
+import { machineConfig, projectHome, timeoutMinutes } from "../runtime/machine.ts";
 import { gitMarkers, markerOf, passCovering } from "../runtime/markers.ts";
 import { stopOnSignal } from "../runtime/run.ts";
 import { type CheckStats, sampleUsage, signOffRecorder } from "../steps/file/v1/sign-off.ts";
@@ -33,8 +33,9 @@ export async function signoff(args: string[]): Promise<number> {
     console.log(skip);
     return 0;
   }
-  const { root, gate } = resolved;
-  const machine = machineConfig(repoName(exec).split("/")[1]!);
+  const { root, gate, modules } = resolved;
+  const project = repoName(exec).split("/")[1]!;
+  const machine = machineConfig(project);
   const base = `origin/${gate.base}`;
   const stats = new Map<string, CheckStats>();
   let release = () => {};
@@ -42,7 +43,7 @@ export async function signoff(args: string[]): Promise<number> {
   try {
     return await signOff({
       sh: exec,
-      checks: projectChecks(gate, { root, machine, sh: exec }),
+      checks: projectChecks(gate, { root, modules, machine, home: projectHome(project), sh: exec }),
       docs: gate.docs,
       base,
       status: gate.status,

@@ -66,7 +66,13 @@ test("gate@1 leaves the branch pushed with a status per configured check under t
     return exec(command, args, { cwd: work, ...options });
   };
   const config = resolved({ gate }).gate;
-  const checks = projectChecks(config, { root: work, machine: {}, sh });
+  const checks = projectChecks(config, {
+    root: work,
+    modules: resolved({}).modules,
+    machine: {},
+    home: work,
+    sh,
+  });
   const records: SignOff[] = [];
   const code = await signOff({
     sh,

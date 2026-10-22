@@ -105,7 +105,7 @@ export function changedFiles(
 }
 
 /** Runs a configured command through sh, with args after it. */
-const shell = (command: string, args: readonly string[]) => [
+export const shell = (command: string, args: readonly string[]) => [
   "sh",
   "-c",
   `${command} "$@"`,

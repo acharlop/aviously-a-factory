@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { FACTORY_LABELS } from "../labels.ts";
 import { findModule } from "../modules/registry.ts";
-import { modules } from "../modules/schema.ts";
+import { type Modules, modules } from "../modules/schema.ts";
 import { TIMEOUT_KEYS } from "../runtime/machine.ts";
 import { findStep, STEP_VERSIONS, stepNames } from "../steps/registry.ts";
 import type { StepVersion } from "../steps/step.ts";
@@ -255,6 +255,13 @@ export const schemaFor = (registry: readonly StepVersion[]) =>
           code: "custom",
           path: ["labelRenames", from],
           message: `"${to}" is not a factory label; known: ${FACTORY_LABELS.map((label) => label.name).join(", ")}`,
+        });
+    for (const [name, check] of Object.entries(config.gate.checks))
+      if ("module" in check && config.modules[check.module as keyof Modules] === "none")
+        ctx.addIssue({
+          code: "custom",
+          path: ["gate", "checks", name, "module"],
+          message: `the ${check.module} module is none; switch it on in modules.${check.module}`,
         });
   });
 

@@ -1,9 +1,16 @@
 import type { Check } from "../runtime/checks.ts";
 import type { Exec } from "../runtime/exec.ts";
 import type { MachineConfig } from "../runtime/machine.ts";
+import type { Modules } from "./schema.ts";
 
-/** What a module's hooks are built with: the project's checkout, this machine's config for the project, and the shell. */
-export type ModuleContext = { root: string; machine: MachineConfig; sh: Exec };
+/** What a module's hooks are built with: the project's checkout, its modules' settings, this machine's config and folder for the project, and the shell. */
+export type ModuleContext = {
+  root: string;
+  modules: Modules;
+  machine: MachineConfig;
+  home: string;
+  sh: Exec;
+};
 
 /** Run in the merge queue's clone while main is being merged into a head, with the merge uncommitted and any conflicts in place: mends what it can, and says why the head can't land, or undefined. */
 export type Fixup = (at: {
