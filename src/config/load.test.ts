@@ -103,3 +103,10 @@ test("pins resolve to a version, none, or a local path; unpinned steps take thei
     review: { version: 2, summary: "several inspectors" },
   });
 });
+
+test("departments resolve as written, none by default", () => {
+  assert.deepEqual(resolveConfig(parseConfig({ configVersion: 1 }), "/p").departments, []);
+  const config = parseConfig({ configVersion: 1, departments: ["web", "api"] });
+  assert.deepEqual(resolveConfig(config, "/p").departments, ["web", "api"]);
+  assert.throws(() => parseConfig({ configVersion: 1, departments: ["Web App"] }), ConfigError);
+});

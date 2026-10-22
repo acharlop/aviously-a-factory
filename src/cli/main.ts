@@ -6,6 +6,7 @@ import { doctor } from "./doctor.ts";
 import { memo, timesheet } from "./file.ts";
 import { labels } from "./labels.ts";
 import { migrate } from "./migrate.ts";
+import { untriaged } from "./untriaged.ts";
 
 const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promise<number> }> = {
   doctor: { summary: "Check the config, the plugin and this machine", run: doctor },
@@ -38,6 +39,7 @@ const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promi
       "File the shift's section on this machine's memo for the day (<input.json> [--dry-run] [--run-dir <path>])",
     run: memo,
   },
+  untriaged: { summary: "List the open tickets the receptionist has yet to route", run: untriaged },
   version: {
     summary: "Print the factory release",
     run: async () => {
@@ -50,7 +52,7 @@ const COMMANDS: Record<string, { summary: string; run: (args: string[]) => Promi
 function help(): number {
   console.log(`factory ${FACTORY_VERSION}\n\nUsage: factory <command>\n`);
   for (const [name, { summary }] of Object.entries(COMMANDS))
-    console.log(`  ${name.padEnd(10)}${summary}`);
+    console.log(`  ${name.padEnd(11)}${summary}`);
   return 0;
 }
 

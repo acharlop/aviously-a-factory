@@ -38,7 +38,7 @@ export function parseConfig(raw: unknown, schema = configSchema): FactoryConfig 
 }
 
 export type ResolvedStep =
-  | { version: number; summary: string; deprecated?: string }
+  | { version: number; summary: string; agent?: string; deprecated?: string }
   | { local: string }
   | "none";
 
@@ -47,6 +47,7 @@ export type Resolved = {
   factoryVersion: string;
   configVersion: number;
   root: string;
+  departments: string[];
   steps: Record<string, ResolvedStep>;
   paperTrail: PaperTrail | "none";
 };
@@ -69,14 +70,20 @@ export function resolveConfig(
     if (pin === "none") steps[name] = "none";
     else if (typeof pin === "object") steps[name] = { local: resolve(root, pin.local) };
     else {
-      const { summary, deprecated } = findStep(name, pin, registry)!;
-      steps[name] = { version: pin, summary, ...(deprecated && { deprecated }) };
+      const { summary, agent, deprecated } = findStep(name, pin, registry)!;
+      steps[name] = {
+        version: pin,
+        summary,
+        ...(agent && { agent }),
+        ...(deprecated && { deprecated }),
+      };
     }
   }
   return {
     factoryVersion: FACTORY_VERSION,
     configVersion: config.configVersion,
     root,
+    departments: config.departments,
     steps,
     paperTrail: config.paperTrail,
   };

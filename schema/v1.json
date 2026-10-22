@@ -6,6 +6,15 @@
       "type": "number",
       "const": 1
     },
+    "departments": {
+      "default": [],
+      "description": "The departments tickets are filed under, each a department:<name> label",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      }
+    },
     "steps": {
       "default": {},
       "description": "The version each step runs at. A step left out runs at its oldest live version",
