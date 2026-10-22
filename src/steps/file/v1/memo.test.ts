@@ -23,6 +23,7 @@ const trail: PaperTrail = {
   timesheet: "timesheets/shifts.jsonl",
   signOffs: "sign-offs",
   memoLabel: "memo",
+  suggestionBox: "suggestion-box",
 };
 
 const input = (overrides: Partial<Input> = {}): Input => ({

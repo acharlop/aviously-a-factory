@@ -8,6 +8,7 @@ Read [GLOSSARY.md](GLOSSARY.md) first and use its words; its _Avoid_ lists are b
 - `src/config/`: `factory.config.ts` schema (Zod, strict, `configVersion`), loading, resolving to `.factory/resolved.json`. `schema/v<N>.json` is generated: `pnpm factory schema > schema/v1.json`.
 - `src/runtime/`: what every step shares: `exec`, `github`, the machine config (`~/.factory`), marks and transcripts.
 - `src/steps/<name>/v<N>/`: one step version, registered in `src/steps/registry.ts`, with a `contract.test.ts`. Fixes edit a version in place; new behaviour is a new number.
+- `src/shift/`: the foreman's tools that belong to no one step: timings, usage, calls, cleaning up worktrees, and resuming a ticket at its first missing step.
 - `src/modules/`: the modules' config (`modules` in `factory.config.ts`) and their scripts. Their agents and prose are in `agents/` and `skills/modules/`.
 - `.claude-plugin/`, `skills/`, `agents/`, `hooks/`: the Claude Code plugin. Claude Code installs it as a plain checkout, so agent and skill prose runs anything scripted as `pnpm factory <cmd>`. Its version always equals `package.json`'s.
 

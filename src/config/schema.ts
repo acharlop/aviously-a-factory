@@ -43,10 +43,47 @@ const paperTrail = z
         .min(1)
         .default("memo")
         .describe("Label on each memo, an issue in the repository per machine per day"),
+      suggestionBox: z
+        .string()
+        .min(1)
+        .default("suggestion-box")
+        .describe(
+          "Folder for the suggestion box: each shift's notes in a folder per day, and reviews.jsonl, one line per performance review",
+        ),
     }),
   ])
   .default("none")
   .describe("Where the File step writes timesheets, memos and sign-offs");
+
+const globs = (what: string) => z.array(z.string().min(1)).default([]).describe(what);
+
+const foreman = z
+  .strictObject({
+    setup: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("Runs in each new worktree before its temp starts, e.g. pnpm wt:setup"),
+    teardown: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        "Runs in a merged worktree before factory clean removes it, e.g. to drop its databases",
+      ),
+    security: globs(
+      "Globs, from the project root, of files whose change also gets the security inspector",
+    ),
+    migrations: globs(
+      "Globs of schema files whose change needs a migration generated before factory push",
+    ),
+    heavy: z
+      .array(z.string().min(1))
+      .default([])
+      .describe("Commands factory calls counts on rows of their own, e.g. pnpm e2e:spec"),
+  })
+  .default({ security: [], migrations: [], heavy: [] })
+  .describe("How the foreman sets up worktrees, picks inspectors and pushes");
 
 const fields = {
   configVersion: z.literal(CONFIG_VERSION),
@@ -66,6 +103,7 @@ const fields = {
       'Old label names this project renames to factory labels, beyond the factory\'s own list, e.g. { factory: "kind:tooling" }',
     ),
   modules,
+  foreman,
 };
 
 /** The config schema, checking step pins against `registry`. */
@@ -102,6 +140,7 @@ export const configSchema = schemaFor(STEP_VERSIONS);
 export type FactoryConfigInput = z.input<typeof configSchema>;
 export type FactoryConfig = z.output<typeof configSchema>;
 export type PaperTrail = Exclude<FactoryConfig["paperTrail"], "none">;
+export type Foreman = FactoryConfig["foreman"];
 
 export const jsonSchema = () =>
   z.toJSONSchema(configSchema, { io: "input", unrepresentable: "any" });

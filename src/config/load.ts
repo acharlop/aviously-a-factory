@@ -7,7 +7,7 @@ import type { Modules } from "../modules/schema.ts";
 import { findStep, STEP_VERSIONS, stepNames } from "../steps/registry.ts";
 import type { StepVersion } from "../steps/step.ts";
 import { FACTORY_VERSION } from "../version.ts";
-import { configSchema, type FactoryConfig, type PaperTrail } from "./schema.ts";
+import { configSchema, type FactoryConfig, type Foreman, type PaperTrail } from "./schema.ts";
 
 export const CONFIG_FILE = "factory.config.ts";
 export const RESOLVED_FILE = join(".factory", "resolved.json");
@@ -52,6 +52,7 @@ export type Resolved = {
   steps: Record<string, ResolvedStep>;
   paperTrail: PaperTrail | "none";
   modules: Modules;
+  foreman: Foreman;
 };
 
 /** The version an unpinned step runs: its oldest live one, so a factory upgrade never changes it unasked. */
@@ -89,6 +90,7 @@ export function resolveConfig(
     steps,
     paperTrail: config.paperTrail,
     modules: config.modules,
+    foreman: config.foreman,
   };
 }
 

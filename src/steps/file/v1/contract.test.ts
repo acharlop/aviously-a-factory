@@ -17,6 +17,7 @@ const paperTrail = {
   timesheet: "ts/rows.jsonl",
   signOffs: "so",
   memoLabel: "note",
+  suggestionBox: "box",
 };
 
 /** GitHub in memory: the project's repo and login, the paper trail's files and its issues. */

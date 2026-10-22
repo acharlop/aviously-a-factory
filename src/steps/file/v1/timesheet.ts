@@ -101,11 +101,13 @@ export function queueStats(log: string, start: number, end: number): QueueStats 
   };
 }
 
-/** The items listed under a rework report's `Bugs fixed from review:` heading; none when it has no heading. */
+/** The items listed under a rework report's `Bugs fixed from quality control:` heading (yarcone's temps wrote `from review:`); none when it has no heading. */
 export function reviewBugs(report: string): number {
   const lines = report.split("\n");
-  const at = lines.findIndex((line) => /^\W*Bugs fixed from review:/i.test(line));
-  if (at < 0 || /\w/.test(lines[at]!.split(/review:/i)[1]!)) return 0;
+  const at = lines.findIndex((line) =>
+    /^\W*Bugs fixed from (?:review|quality control):/i.test(line),
+  );
+  if (at < 0 || /\w/.test(lines[at]!.split(/(?:review|quality control):/i)[1]!)) return 0;
   let count = 0;
   for (const line of lines.slice(at + 1)) {
     if (/^\s*([-*]|\d+[.)])\s+/.test(line)) count += 1;

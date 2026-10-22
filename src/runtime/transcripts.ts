@@ -243,9 +243,9 @@ const isLocal = (said: string) => said.startsWith("<local-command-");
 
 /** `/factory`, a project's `/<name>-factory` or a plugin's `/<plugin>:factory`, as a slash command or typed. */
 const factoryCommand =
-  /<command-name>\/(?:[\w-]+:)?(?:[\w-]+-)?factory<\/command-name>|^\/(?:[\w-]+:)?(?:[\w-]+-)?factory\b/;
+  /<command-name>\/(?:[\w-]+:)?(?:[\w-]+-)?(?:factory|foreman)<\/command-name>|^\/(?:[\w-]+:)?(?:[\w-]+-)?(?:factory|foreman)\b/;
 
-const runnerPrompt = /^Invoke the (?:[\w-]+-)?factory skill\b/;
+const runnerPrompt = /^Invoke the (?:[\w-]+:)?(?:[\w-]+-)?(?:factory|foreman) skill\b/;
 
 const invokes = (said: string) =>
   !isLocal(said) && (factoryCommand.test(said) || runnerPrompt.test(said));
