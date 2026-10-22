@@ -55,9 +55,9 @@ Run the `lost-and-found` skill. Its questions join this meeting's rounds.
 Before the first round, and again before each round after it:
 
 ```bash
-git fetch origin && git log --oneline HEAD..origin/main
+git fetch origin && git log --oneline HEAD..origin/<base>
 gh issue view <n> --comments
-gh pr view <pr> --comments   # each related PR
+gh pr view <pr> --comments   # each related PR; <base> is gate.base in .factory/resolved.json
 ```
 
 Teammates answer on the ticket, often mid-meeting. A question asked without their latest comment gets reopened.

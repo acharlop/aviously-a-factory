@@ -11,7 +11,7 @@ You build one ticket, in this project, in the worktree and on the branch the for
 ## Build
 
 1. Read the ticket with its comments (`gh issue view <n> --comments`): comments carry the decisions.
-2. With no worktree in the brief, branch off main: `git fetch origin && git checkout -b <department>/<n>-<slug> origin/main`.
+2. With no worktree in the brief, branch off the base (`gate.base` in `.factory/resolved.json`, usually main): `git fetch origin && git checkout -b <department>/<n>-<slug> origin/<base>`.
 3. Build the smallest change that meets the ticket, with its tests. Each Verify and done-when line is in scope: one you can't meet as written (no test can cover it, or it looks wrong) is a question in your report, never left out. Don't remove or tighten anything the ticket doesn't name; ask. Match the surrounding code's naming and idiom. For a screen, open the reference screen the ticket names before writing any UI.
 4. Commit each piece as soon as its own test passes, so a timeout keeps the work. Run the tests your change affects, and the project's checks once at the end, before you hand back; leave the full suite to the queue. Report their counts once: files and tests.
 5. One concern per commit. The subject says the behaviour now, from the user's side, after a department prefix; the body says what was wrong and links the ticket.
@@ -19,7 +19,7 @@ You build one ticket, in this project, in the worktree and on the branch the for
 
 **Modules.** `modules` in `.factory/resolved.json` says which are on; the `modules` skill says what each asks of you. With translations on, add catalog keys in the source locale with rough copy and move on: the copy desk settles them. With screenshots on and a change to what a screen renders, take the changed screens with `modules.screenshots.command` (the folder in `SHOTS_DIR`), in every one of its `locales`: one shot per done-when line that renders something, then empty, error, realistic volume and each dialog step, each file named `<n>-...` after the ticket. With mobile on and a branch the app reaches, run `modules.mobile.listFlows` with the base appended and name the flows it lists.
 
-**Fails without the fix.** Prove each test you added or changed fails without your change: run it on the commit your branch forked from main (`git merge-base HEAD origin/main`) in a scratch worktree of its own, never by stashing or checking out files in your branch, then remove that worktree. A test that fails only because its module or export is missing there proves nothing; say so. A test that waits on something main's screens don't render is `yes (by construction: <what main lacks>)`.
+**Fails without the fix.** Prove each test you added or changed fails without your change: run it on the commit your branch forked from main (`git merge-base HEAD origin/<base>`) in a scratch worktree of its own, never by stashing or checking out files in your branch, then remove that worktree. A test that fails only because its module or export is missing there proves nothing; say so. A test that waits on something main's screens don't render is `yes (by construction: <what main lacks>)`.
 
 A schema change is yours to make and report; whoever pushes generates its migration (`foreman.migrations` in `.factory/resolved.json` names the schema files).
 
@@ -29,7 +29,7 @@ Briefed for rework, you get the confirmed findings, each with the file:line and 
 
 ## Push
 
-Only when the brief says to. It gives the ticket, the calls made, the screenshots folder for a UI change, and `auto-merge: on` or `off`. Rework that added or reworded a source-locale string doesn't push: say so in your report, since the copy desk runs first. Otherwise put the calls in the PR body file and run `pnpm factory push <n> --auto-merge on|off [--shots <dir>]` in the worktree: it checks the claim again, pushes (the project's pre-push hook runs), opens the ready PR or updates it, turns on auto-merge when told and records "Reviewed at". Its stop is a stop condition; the foreman parks a lost claim. A schema change it refuses: merge `origin/main`, generate the migration as the project handbook says, commit, and run it again. Never merge.
+Only when the brief says to. It gives the ticket, the calls made, the screenshots folder for a UI change, and `auto-merge: on` or `off`. Rework that added or reworded a source-locale string doesn't push: say so in your report, since the copy desk runs first. Otherwise put the calls in the PR body file and run `pnpm factory push <n> --auto-merge on|off [--shots <dir>]` in the worktree: it checks the claim again, pushes (the project's pre-push hook runs), opens the ready PR or updates it, turns on auto-merge when told and records "Reviewed at". Its stop is a stop condition; the foreman parks a lost claim. A schema change it refuses: merge `origin/<base>`, generate the migration as the project handbook says, commit, and run it again. Never merge.
 
 ## Always
 

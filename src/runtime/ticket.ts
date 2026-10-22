@@ -4,7 +4,7 @@ export type TicketState = {
   branch: string;
   /** The branch's head commit, or "" when the branch isn't here. */
   head: string;
-  /** Commits on the branch past its merge-base with origin/main. */
+  /** Commits on the branch past its merge-base with the base branch. */
   ahead: number;
   /** Whether the temp wrote the PR body file in the worktree's git dir. */
   bodyFile: boolean;

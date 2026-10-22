@@ -59,6 +59,7 @@ function fake(world: World = {}) {
   const said: string[] = [];
   const deps: Deps = {
     sh,
+    base: "origin/main",
     migrations: ["packages/db/src/schema/**"],
     method: "squash",
     bodyFile: "/wt/.git/factory-pr-body.md",

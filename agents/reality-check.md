@@ -7,7 +7,7 @@ model: haiku
 
 You check one ticket against the code before anyone builds it, so a wrong line costs a ticket edit rather than a rework. Read-only: never comment, edit or label anything, and never edit files.
 
-Read the ticket with its comments (`gh issue view <n> --comments`), then check every line a temp would rely on in a checkout of `origin/main` (the brief gives it):
+Read the ticket with its comments (`gh issue view <n> --comments`), then check every line a temp would rely on in a checkout of the base branch, `origin/<gate.base>` (the brief gives it):
 
 - **Verify and done-when lines:** the tests, specs, scripts and commands they name exist; a grep or command the ticket gives returns what it says. Run them.
 - **Premises:** facts about the code (where something lives, what renders, widths, counts, a list of N copies) hold when you measure them in the code.

@@ -12,7 +12,7 @@ import {
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import type { Resolved } from "../config/load.ts";
+import { RESOLVED_FILE, type Resolved } from "../config/load.ts";
 import type { PaperTrail } from "../config/schema.ts";
 import type { Exec } from "../runtime/exec.ts";
 import { runLockOf, takeRunLock } from "../runtime/run-lock.ts";
@@ -46,6 +46,13 @@ import {
 } from "./rota.ts";
 
 /** What a tick needs from the machine; tests pass fakes. */
+
+/** The checkout's base branch from its last resolved config; main before the first resolve. */
+function baseOf(checkout: string): string {
+  const file = join(checkout, RESOLVED_FILE);
+  return existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as Resolved).gate.base : "main";
+}
+
 export type Runner = {
   /** `~/.factory`. */
   home: string;
@@ -242,7 +249,7 @@ export async function tick(r: Runner): Promise<number> {
     };
 
     const synced = new Map<string, string | true>();
-    // Fast-forwards the checkout to origin/main once a tick: true, or why not.
+    // Fast-forwards the checkout to its base branch once a tick: true, or why not.
     const sync = (p: Project): string | true => {
       const known = synced.get(p.name);
       if (known) return known;
@@ -251,14 +258,15 @@ export async function tick(r: Runner): Promise<number> {
         if (!p.checkout || !existsSync(p.checkout))
           return `no checkout at ${p.checkout ?? "CHECKOUT"}`;
         if (dry) return true;
-        if (git(["symbolic-ref", "--short", "-q", "HEAD"]).stdout.trim() !== "main")
-          return `${p.checkout} is not on main`;
+        const base = baseOf(p.checkout);
+        if (git(["symbolic-ref", "--short", "-q", "HEAD"]).stdout.trim() !== base)
+          return `${p.checkout} is not on ${base}`;
         if (git(["status", "--porcelain", "--untracked-files=no"]).stdout.trim())
           return `${p.checkout} has uncommitted changes`;
         if (git(["fetch", "-q", "origin"]).status !== 0) return "git fetch failed";
         const before = git(["rev-parse", "HEAD"]).stdout.trim();
-        if (git(["merge", "-q", "--ff-only", "origin/main"]).status !== 0)
-          return "main doesn't fast-forward to origin/main";
+        if (git(["merge", "-q", "--ff-only", `origin/${base}`]).status !== 0)
+          return `${base} doesn't fast-forward to origin/${base}`;
         if (git(["diff", "--quiet", before, "HEAD", "--", "pnpm-lock.yaml"]).status !== 0) {
           const install = sh("pnpm", ["install", "--frozen-lockfile"], { cwd: p.checkout });
           if (install.status !== 0) return "pnpm install failed";

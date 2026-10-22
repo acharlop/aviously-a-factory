@@ -85,7 +85,7 @@ Read each with its comments (`gh issue view <n> --comments`): comments carry the
 
 Plan the round: tickets that touch the same files go to one temp or one after another; a big rename or migration runs alone; a ticket that builds what others use goes first; a ticket that adds a guard over existing code (a lint rule, a check, a schema constraint) goes last and alone.
 
-Then claim it, before any code: name the branch `<department>/<n>-<slug>` (its `department:` label, else its kind), run `pnpm factory claim <n> <branch>`, and on exit 1 (someone claimed it first) take the next. Add the worktree: `git worktree add ../<repo>-wt/<n>-<slug> -b <branch> origin/main`, then `foreman.setup` in it when the project sets one. Setups can run side by side; one killed for resources (exit 137, out of memory or disk) is retried once, alone; a second failure is a red for the memo and the ticket waits for the next shift.
+Then claim it, before any code: name the branch `<department>/<n>-<slug>` (its `department:` label, else its kind), run `pnpm factory claim <n> <branch>`, and on exit 1 (someone claimed it first) take the next. Add the worktree: `git worktree add ../<repo>-wt/<n>-<slug> -b <branch> origin/<base>` (`<base>` is `gate.base` in `.factory/resolved.json`), then `foreman.setup` in it when the project sets one. Setups can run side by side; one killed for resources (exit 137, out of memory or disk) is retried once, alone; a second failure is a red for the memo and the ticket waits for the next shift.
 
 ### 4. Build (build@1)
 

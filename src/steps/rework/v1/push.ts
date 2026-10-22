@@ -12,6 +12,8 @@ export type Deps = {
   sh: Exec;
   /** Globs of schema files whose change needs its migration generated before the push. */
   migrations: readonly string[];
+  /** The remote branch the change merges into, such as origin/main. */
+  base: string;
   /** The project's merge method, which auto-merge uses. */
   method: Merge["method"];
   /** The PR body file's path, from the worktree's git dir. */
@@ -102,13 +104,13 @@ export function push({ number, autoMerge, shots, title }: Pushing, deps: Deps): 
   if (lost) return stop(`the claim is lost (${lost}): the foreman parks it`);
   const own = prs.find((pr) => pr.headRefName === branch)?.url;
 
-  const base = read("merge-base", "HEAD", "origin/main");
+  const base = read("merge-base", "HEAD", deps.base);
   const schema = read("diff", "--name-only", base, "HEAD")
     .split("\n")
     .filter((file) => file && deps.migrations.some((glob) => matchesGlob(file, glob)));
   if (schema.length > 0)
     return stop(
-      `the schema changed (${schema.join(", ")}): merge origin/main and generate the migration first`,
+      `the schema changed (${schema.join(", ")}): merge ${deps.base} and generate the migration first`,
     );
   if (read("status", "--porcelain") !== "") return stop("the working tree isn't clean");
 
