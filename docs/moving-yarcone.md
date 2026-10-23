@@ -1,5 +1,7 @@
 # Moving yarcone onto the factory
 
+Done 2026-10-23: eight moves, four yarcone PRs, each landed through the queue that was live at the time ([how it went](#how-it-went)).
+
 Swap what a name points at, one name at a time. Yarcone's skills call `pnpm factory:free`; today that runs yarcone's script, after the move it runs `factory free`. The caller never notices. Delete yarcone's copy the same day.
 
 Move what gets called before what calls it. The foreman and the runner call everything, so they go last.
@@ -61,7 +63,7 @@ An arrow means "calls". Move from the bottom up.
 4. Verify locally: the moved piece's tests, `pnpm verify`, then one supervised shift on a real ticket. Push once.
 5. Note the move in the yarcone memo, so the next performance review knows which step versions changed.
 
-While iterating, link the factory checkout (`pnpm link ~/aviously/aviously-a-factory`) instead of cutting a tag per try. Merge only against a tag.
+While iterating, link the factory checkout (`pnpm link ~/code/aviously-a-factory`) instead of cutting a tag per try. Merge only against a tag.
 
 ### Temporary duplication
 
@@ -82,3 +84,18 @@ The `pnpm factory:*` aliases exist only during the move. After move 8, plugin sk
 - `factory-log` becomes yarcone's paper trail repo and `signoff-runs` folds into it (move 2). Its 36 KB `learnings.md` is split into suggestion box entries and handbook rules.
 
 </details>
+
+## How it went
+
+Landed 2026-10-23 as four PRs: [#1223 🔀](https://github.com/Yarcone/yarcone/pull/1223) (moves 1 and 2), [#1225 🔀](https://github.com/Yarcone/yarcone/pull/1225) (3 and 4), [#1236 🔀](https://github.com/Yarcone/yarcone/pull/1236) (5, 6 and 7), [#1234 🔀](https://github.com/Yarcone/yarcone/pull/1234) (8), plus factory-log [#45 🔀](https://github.com/Yarcone/factory-log/pull/45). The first three went through yarcone's old queue; move 8 and the first two shifts went through `factory queue`. Yarcone epic: [#1211 📋](https://github.com/Yarcone/yarcone/issues/1211).
+
+What the plan did not say, for the next project:
+
+- **Moves 5 and 6 land together.** `main` required `signoff/mobile`, and the gate posts only the checks its config lists, so a gate without the mobile check can never auto-merge.
+- **Stacked PRs die with their base.** GitHub closed two PRs when a squash deleted the branch they were based on. Rebase each move onto `main` once the one before it lands, and never squash into a stacked base.
+- **The plugin is per machine, per user.** `factory doctor` reads `~/.claude/plugins/installed_plugins.json`; `.claude/settings.json` enabling it is not enough. `claude plugin marketplace add acharlop/aviously-a-factory && claude plugin install aviously-a-factory@aviously-a-factory` on every Mac.
+- **The old queue's removal guard.** A PR that deletes factory files needs the project's `removal-ok` label, which the moves did from move 2 on.
+- **pnpm pins the commit.** On pnpm 12 `allowBuilds` needs the full `aviously-a-factory@git+https://...#<sha>` key, so a tag bump edits it too.
+- **A runner over SSH needs a login shell** (`zsh -lc`) for brew, gh and colima on an Intel Mac.
+
+Gaps the move found in v0.2.1, with the exact text, are in the For AI sections of the four PRs; none blocked a shift.

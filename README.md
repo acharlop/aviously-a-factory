@@ -8,7 +8,7 @@ Agents take a project's tickets to merged PRs. A person shows up only for decisi
 - [Design decisions](docs/design-decisions.md): what was decided while designing it, and why.
 - [docs/adr](docs/adr): the decisions that are hard to undo.
 
-Status: the factory side of every move is built (v0.2.1), but no project runs on it yet ([epic 📋](https://github.com/acharlop/aviously-a-factory/issues/10)). The working original still runs in Yarcone/yarcone and Yarcone/factory-log.
+Status: yarcone runs on it since 2026-10-23 (v0.2.1): every move landed, first shifts green on both Macs ([epic 📋](https://github.com/acharlop/aviously-a-factory/issues/10), [how it went](docs/moving-yarcone.md#how-it-went)). Whocards is next ([#9 📋](https://github.com/acharlop/aviously-a-factory/issues/9)).
 
 ## Use it in a project
 
